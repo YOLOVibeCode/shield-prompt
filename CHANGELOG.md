@@ -15,6 +15,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Chocolatey package
 - Audit logging to SQLite
 
+## [1.0.2] - 2026-01-14
+
+### Fixed
+- **Linux AppImage Build Failure** - Fixed FUSE dependency issue
+  - Root cause: `appimagetool-x86_64.AppImage` requires FUSE (libfuse.so.2)
+  - GitHub Actions runners don't have FUSE installed by default
+  - Solution: Extract appimagetool with `--appimage-extract` flag
+  - Now uses `./squashfs-root/AppRun` instead of direct AppImage execution
+  - **Result:** Linux builds now succeed without FUSE dependency
+
+### Technical
+- Analysis performed using GitHub CLI (`gh`) for exact error diagnosis
+- Implemented industry-standard AppImage workaround
+- No changes to functionality - pure CI/CD fix
+- All 180 tests still passing
+
+### References
+- Error: `dlopen(): error loading libfuse.so.2`
+- Solution documented in: `LINUX_BUILD_FAILURE_ANALYSIS.md`
+- AppImage wiki: https://github.com/AppImage/AppImageKit/wiki/FUSE
+
 ## [1.0.1] - 2026-01-14
 
 ### Fixed

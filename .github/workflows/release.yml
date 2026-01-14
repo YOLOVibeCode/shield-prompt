@@ -259,6 +259,9 @@ jobs:
           wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool-x86_64.AppImage
           
+          # Extract appimagetool (avoids FUSE requirement on GitHub runners)
+          ./appimagetool-x86_64.AppImage --appimage-extract
+          
           # Create AppDir
           mkdir -p AppDir/usr/bin
           mkdir -p AppDir/usr/share/applications
@@ -272,8 +275,8 @@ jobs:
           chmod +x AppDir/AppRun
           chmod +x AppDir/usr/bin/ShieldPrompt
           
-          # Build
-          ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir \
+          # Build using extracted appimagetool (no FUSE needed)
+          ARCH=x86_64 ./squashfs-root/AppRun AppDir \
             publish/ShieldPrompt-${{ steps.version.outputs.VERSION }}-linux-x64.AppImage
       
       - name: Create DEB Package
