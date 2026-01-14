@@ -15,6 +15,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Chocolatey package
 - Audit logging to SQLite
 
+## [1.0.3] - 2026-01-14
+
+### Fixed
+- **AppImage Desktop File Location** - Fixed "Desktop file not found" error
+  - Root cause: appimagetool expects desktop file at AppDir root
+  - Previously only copied to AppDir/usr/share/applications/
+  - Solution: Copy desktop file + icon to AppDir root as well
+  - **Result:** AppImage packaging now follows standard conventions
+
+### Technical
+- Added desktop file to AppDir root (required by appimagetool)
+- Added icon to AppDir root for proper AppImage metadata
+- All 180 tests still passing
+- FUSE workaround from v1.0.2 still in effect
+
+### References
+- AppImage specification requires desktop file at AppDir root
+- Error: "Desktop file not found, aborting"
+
 ## [1.0.2] - 2026-01-14
 
 ### Fixed

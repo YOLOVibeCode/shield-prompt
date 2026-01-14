@@ -270,7 +270,9 @@ jobs:
           # Copy files
           cp publish/linux-x64/ShieldPrompt AppDir/usr/bin/
           cp installers/linux/shieldprompt.desktop AppDir/usr/share/applications/
+          cp installers/linux/shieldprompt.desktop AppDir/  # AppImage needs desktop file at root
           cp installers/linux/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/shieldprompt.png
+          cp installers/linux/icon.png AppDir/shieldprompt.png  # AppImage needs icon at root
           cp installers/linux/AppRun AppDir/
           chmod +x AppDir/AppRun
           chmod +x AppDir/usr/bin/ShieldPrompt

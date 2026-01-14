@@ -1,0 +1,106 @@
+Build Linux	Create AppImage	﻿2026-01-14T23:26:38.4783706Z ##[group]Run # Install appimagetool
+Build Linux	Create AppImage	2026-01-14T23:26:38.4784066Z [36;1m# Install appimagetool[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4784594Z [36;1mwget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4785150Z [36;1mchmod +x appimagetool-x86_64.AppImage[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4785416Z [36;1m[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4785694Z [36;1m# Extract appimagetool (avoids FUSE requirement on GitHub runners)[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4786123Z [36;1m./appimagetool-x86_64.AppImage --appimage-extract[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4786413Z [36;1m[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4786591Z [36;1m# Create AppDir[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4786812Z [36;1mmkdir -p AppDir/usr/bin[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4787090Z [36;1mmkdir -p AppDir/usr/share/applications[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4787453Z [36;1mmkdir -p AppDir/usr/share/icons/hicolor/256x256/apps[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4787756Z [36;1m[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4787926Z [36;1m# Copy files[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4788183Z [36;1mcp publish/linux-x64/ShieldPrompt AppDir/usr/bin/[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4788650Z [36;1mcp installers/linux/shieldprompt.desktop AppDir/usr/share/applications/[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4789240Z [36;1mcp installers/linux/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/shieldprompt.png[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4789718Z [36;1mcp installers/linux/AppRun AppDir/[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4789986Z [36;1mchmod +x AppDir/AppRun[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4790245Z [36;1mchmod +x AppDir/usr/bin/ShieldPrompt[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4790496Z [36;1m[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4790734Z [36;1m# Build using extracted appimagetool (no FUSE needed)[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4791317Z [36;1mARCH=x86_64 ./squashfs-root/AppRun AppDir \[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4791697Z [36;1m  publish/ShieldPrompt-1.0.2-linux-x64.AppImage[0m
+Build Linux	Create AppImage	2026-01-14T23:26:38.4819895Z shell: /usr/bin/bash -e {0}
+Build Linux	Create AppImage	2026-01-14T23:26:38.4820119Z env:
+Build Linux	Create AppImage	2026-01-14T23:26:38.4820294Z   DOTNET_VERSION: 10.0.x
+Build Linux	Create AppImage	2026-01-14T23:26:38.4820517Z   DOTNET_ROOT: /usr/share/dotnet
+Build Linux	Create AppImage	2026-01-14T23:26:38.4820753Z ##[endgroup]
+Build Linux	Create AppImage	2026-01-14T23:26:39.4362634Z squashfs-root/.DirIcon
+Build Linux	Create AppImage	2026-01-14T23:26:39.4363189Z squashfs-root/AppRun
+Build Linux	Create AppImage	2026-01-14T23:26:39.4363622Z squashfs-root/appimagetool.desktop
+Build Linux	Create AppImage	2026-01-14T23:26:39.4364165Z squashfs-root/appimagetool.png
+Build Linux	Create AppImage	2026-01-14T23:26:39.4364588Z squashfs-root/usr
+Build Linux	Create AppImage	2026-01-14T23:26:39.4365009Z squashfs-root/usr/bin
+Build Linux	Create AppImage	2026-01-14T23:26:39.4365404Z squashfs-root/usr/bin/AppRun
+Build Linux	Create AppImage	2026-01-14T23:26:39.4365861Z squashfs-root/usr/bin/appimagetool
+Build Linux	Create AppImage	2026-01-14T23:26:39.4366376Z squashfs-root/usr/bin/desktop-file-validate
+Build Linux	Create AppImage	2026-01-14T23:26:39.4366891Z squashfs-root/usr/bin/zsyncmake
+Build Linux	Create AppImage	2026-01-14T23:26:39.4367326Z squashfs-root/usr/lib
+Build Linux	Create AppImage	2026-01-14T23:26:39.4367745Z squashfs-root/usr/lib/appimagekit
+Build Linux	Create AppImage	2026-01-14T23:26:39.4368281Z squashfs-root/usr/lib/appimagekit/mksquashfs
+Build Linux	Create AppImage	2026-01-14T23:26:39.4369291Z squashfs-root/usr/lib/libassuan.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4369792Z squashfs-root/usr/lib/libassuan.so.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4370309Z squashfs-root/usr/lib/libassuan.so.0.8.5
+Build Linux	Create AppImage	2026-01-14T23:26:39.4371146Z squashfs-root/usr/lib/libffi.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4371643Z squashfs-root/usr/lib/libffi.so.6
+Build Linux	Create AppImage	2026-01-14T23:26:39.4372160Z squashfs-root/usr/lib/libgcrypt.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4372680Z squashfs-root/usr/lib/libgcrypt.so.20
+Build Linux	Create AppImage	2026-01-14T23:26:39.4373239Z squashfs-root/usr/lib/libgcrypt.so.20.4.1
+Build Linux	Create AppImage	2026-01-14T23:26:39.4373785Z squashfs-root/usr/lib/libgio-2.0.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4374302Z squashfs-root/usr/lib/libgio-2.0.so.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4374862Z squashfs-root/usr/lib/libgio-2.0.so.0.5600.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4375427Z squashfs-root/usr/lib/libglib-2.0.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4375911Z squashfs-root/usr/lib/libglib-2.0.so.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4376413Z squashfs-root/usr/lib/libglib-2.0.so.0.5600.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4376970Z squashfs-root/usr/lib/libgmodule-2.0.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4377521Z squashfs-root/usr/lib/libgmodule-2.0.so.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4378129Z squashfs-root/usr/lib/libgmodule-2.0.so.0.5600.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4378735Z squashfs-root/usr/lib/libgobject-2.0.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4379570Z squashfs-root/usr/lib/libgobject-2.0.so.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4380130Z squashfs-root/usr/lib/libgobject-2.0.so.0.5600.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4380705Z squashfs-root/usr/lib/libgpg-error.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4381563Z squashfs-root/usr/lib/libgpg-error.so.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4382134Z squashfs-root/usr/lib/libgpg-error.so.0.33.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4382703Z squashfs-root/usr/lib/libgpgme.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4383199Z squashfs-root/usr/lib/libgpgme.so.11
+Build Linux	Create AppImage	2026-01-14T23:26:39.4383757Z squashfs-root/usr/lib/libgpgme.so.11.26.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4384327Z squashfs-root/usr/lib/libgpgmepp.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4384848Z squashfs-root/usr/lib/libgpgmepp.so.6
+Build Linux	Create AppImage	2026-01-14T23:26:39.4385402Z squashfs-root/usr/lib/libgpgmepp.so.6.14.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4386015Z squashfs-root/usr/lib/libgthread-2.0.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4386577Z squashfs-root/usr/lib/libgthread-2.0.so.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4387178Z squashfs-root/usr/lib/libgthread-2.0.so.0.5600.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4387771Z squashfs-root/usr/lib/libksba.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4388280Z squashfs-root/usr/lib/libksba.so.8
+Build Linux	Create AppImage	2026-01-14T23:26:39.4388824Z squashfs-root/usr/lib/libksba.so.8.14.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4389366Z squashfs-root/usr/lib/libnpth.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4389869Z squashfs-root/usr/lib/libnpth.so.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4390394Z squashfs-root/usr/lib/libnpth.so.0.1.2
+Build Linux	Create AppImage	2026-01-14T23:26:39.4391115Z squashfs-root/usr/lib/libpcre.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4391618Z squashfs-root/usr/lib/libpcre.so.1
+Build Linux	Create AppImage	2026-01-14T23:26:39.4392112Z squashfs-root/usr/lib/libpcre.so.1.2.8
+Build Linux	Create AppImage	2026-01-14T23:26:39.4392630Z squashfs-root/usr/lib/libpcre16.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4393111Z squashfs-root/usr/lib/libpcre16.so.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4393620Z squashfs-root/usr/lib/libpcre32.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4394121Z squashfs-root/usr/lib/libpcre32.so.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4394638Z squashfs-root/usr/lib/libpcrecpp.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4395171Z squashfs-root/usr/lib/libpcrecpp.so.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4395733Z squashfs-root/usr/lib/libpcrecpp.so.0.0.1
+Build Linux	Create AppImage	2026-01-14T23:26:39.4396317Z squashfs-root/usr/lib/libpcreposix.so
+Build Linux	Create AppImage	2026-01-14T23:26:39.4396863Z squashfs-root/usr/lib/libpcreposix.so.0
+Build Linux	Create AppImage	2026-01-14T23:26:39.4397444Z squashfs-root/usr/lib/libpcreposix.so.0.0.4
+Build Linux	Create AppImage	2026-01-14T23:26:39.4397956Z squashfs-root/usr/share
+Build Linux	Create AppImage	2026-01-14T23:26:39.4398485Z squashfs-root/usr/share/applications
+Build Linux	Create AppImage	2026-01-14T23:26:39.4399150Z squashfs-root/usr/share/applications/appimagetool.desktop
+Build Linux	Create AppImage	2026-01-14T23:26:39.4399768Z squashfs-root/usr/share/icons
+Build Linux	Create AppImage	2026-01-14T23:26:39.4400242Z squashfs-root/usr/share/icons/hicolor
+Build Linux	Create AppImage	2026-01-14T23:26:39.4400986Z squashfs-root/usr/share/icons/hicolor/128x128
+Build Linux	Create AppImage	2026-01-14T23:26:39.4401627Z squashfs-root/usr/share/icons/hicolor/128x128/apps
+Build Linux	Create AppImage	2026-01-14T23:26:39.4402408Z squashfs-root/usr/share/icons/hicolor/128x128/apps/appimagetool.png
+Build Linux	Create AppImage	2026-01-14T23:26:39.4403399Z squashfs-root/usr/share/metainfo
+Build Linux	Create AppImage	2026-01-14T23:26:39.4404042Z squashfs-root/usr/share/metainfo/appimagetool.appdata.xml
+Build Linux	Create AppImage	2026-01-14T23:26:39.5097973Z appimagetool, continuous build (commit 5735cc5), build <local dev build> built on 2023-03-08 22:52:04 UTC
+Build Linux	Create AppImage	2026-01-14T23:26:39.5102180Z Desktop file not found, aborting
+Build Linux	Create AppImage	2026-01-14T23:26:39.5113277Z ##[error]Process completed with exit code 1.
