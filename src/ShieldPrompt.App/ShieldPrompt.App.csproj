@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    
+    <!-- Version Information -->
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <InformationalVersion>1.0.0</InformationalVersion>
+    
+    <!-- Product Information -->
+    <Product>ShieldPrompt</Product>
+    <Company>YOLOVibeCode</Company>
+    <Authors>YOLOVibeCode</Authors>
+    <Copyright>Copyright © 2026 YOLOVibeCode</Copyright>
+    <Description>Secure AI prompt generation with automatic data protection. The safe alternative to agentic AI coding tools.</Description>
+    <PackageProjectUrl>https://github.com/YOLOVibeCode/shield-prompt</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/YOLOVibeCode/shield-prompt</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>security;ai;chatgpt;sanitization;enterprise;compliance;prompt;copilot-alternative</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.11" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.11">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
+    <PackageReference Include="TextCopy" Version="6.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ShieldPrompt.Domain\ShieldPrompt.Domain.csproj" />
+    <ProjectReference Include="..\ShieldPrompt.Application\ShieldPrompt.Application.csproj" />
+    <ProjectReference Include="..\ShieldPrompt.Presentation\ShieldPrompt.Presentation.csproj" />
+    <ProjectReference Include="..\ShieldPrompt.Sanitization\ShieldPrompt.Sanitization.csproj" />
+    <ProjectReference Include="..\ShieldPrompt.Infrastructure\ShieldPrompt.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

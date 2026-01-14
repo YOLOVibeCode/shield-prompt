@@ -1,0 +1,253 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ShieldPrompt.App.ViewModels"
+        xmlns:presentation="using:ShieldPrompt.Presentation.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
+        x:Class="ShieldPrompt.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="ShieldPrompt - Secure AI Prompt Generation"
+        Width="1200" Height="700">
+
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding OpenFolderCommand}"/>
+        <KeyBinding Gesture="Ctrl+C" Command="{Binding CopyToClipboardCommand}"/>
+        <KeyBinding Gesture="Ctrl+V" Command="{Binding OpenPasteRestoreDialogCommand}"/>
+        <KeyBinding Gesture="Ctrl+R" Command="{Binding OpenFolderCommand}"/>
+        <KeyBinding Gesture="F5" Command="{Binding OpenFolderCommand}"/>
+        <KeyBinding Gesture="Ctrl+Z" Command="{Binding UndoCommand}"/>
+        <KeyBinding Gesture="Ctrl+Y" Command="{Binding RedoCommand}"/>
+        <KeyBinding Gesture="Ctrl+Shift+Z" Command="{Binding RedoCommand}"/>
+    </Window.KeyBindings>
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Toolbar -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="10">
+            <Button Content="📁 Open Folder" 
+                    Command="{Binding OpenFolderCommand}"
+                    ToolTip.Tip="Open a folder to analyze (Ctrl+O)"
+                    HorizontalContentAlignment="Center"
+                    Padding="15,8"/>
+            <Button Content="🔄 Refresh" 
+                    Command="{Binding OpenFolderCommand}"
+                    ToolTip.Tip="Reload current folder (F5 or Ctrl+R)"
+                    HorizontalContentAlignment="Center"
+                    Padding="15,8"/>
+            <Button Content="📥 Paste &amp; Restore"
+                    Command="{Binding OpenPasteRestoreDialogCommand}"
+                    ToolTip.Tip="Paste AI response and restore original values (Ctrl+V)"
+                    HorizontalContentAlignment="Center"
+                    Padding="15,8"/>
+            <Separator Width="1" Height="30"/>
+            <Button Content="↶ Undo"
+                    Command="{Binding UndoCommand}"
+                    ToolTip.Tip="{Binding UndoDescription, StringFormat='Undo: {0} (Ctrl+Z)'}"
+                    HorizontalContentAlignment="Center"
+                    Padding="12,8"/>
+            <Button Content="↷ Redo"
+                    Command="{Binding RedoCommand}"
+                    ToolTip.Tip="{Binding RedoDescription, StringFormat='Redo: {0} (Ctrl+Y)'}"
+                    HorizontalContentAlignment="Center"
+                    Padding="12,8"/>
+            <Separator Width="1" Height="30"/>
+            <TextBlock Text="Format:" VerticalAlignment="Center" Margin="10,0,5,0"/>
+            <ComboBox ItemsSource="{Binding AvailableFormatters}"
+                      SelectedItem="{Binding SelectedFormatter}"
+                      ToolTip.Tip="Choose output format for the prompt"
+                      Width="120">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding FormatName}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock Text="Model:" VerticalAlignment="Center" Margin="10,0,5,0"/>
+            <ComboBox ItemsSource="{Binding AvailableModels}"
+                      SelectedItem="{Binding SelectedModel}"
+                      ToolTip.Tip="Select AI model for token limit calculation"
+                      Width="180">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding DisplayName}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Row="1" ColumnDefinitions="300,*" Margin="10,0">
+            <!-- File Tree (Left Panel) -->
+            <Border Grid.Column="0" 
+                    BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="10"
+                    Margin="0,0,5,0">
+                <ScrollViewer>
+                    <TreeView ItemsSource="{Binding RootNodeViewModel.Children}"
+                              SelectionMode="Multiple">
+                        <TreeView.ItemTemplate>
+                            <TreeDataTemplate ItemsSource="{Binding Children}" DataType="presentation:FileNodeViewModel">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <CheckBox IsChecked="{Binding IsSelected}"
+                                              VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Icon}" 
+                                               VerticalAlignment="Center"
+                                               FontSize="14"/>
+                                    <TextBlock Text="{Binding Name}" 
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding TokenCount, StringFormat='({0} tok)'}"
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                               FontSize="11"
+                                               VerticalAlignment="Center"
+                                               IsVisible="{Binding !!TokenCount}"
+                                               Margin="5,0,0,0"/>
+                                </StackPanel>
+                            </TreeDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Preview/Output Area (Right Panel) -->
+            <Border Grid.Column="1"
+                    BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="10"
+                    Margin="5,0,0,0">
+                <Grid RowDefinitions="Auto,*,Auto,Auto">
+                    <!-- Header with Shield Toggle -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                        <TextBlock Grid.Column="0" 
+                                   Text="Sanitization Preview"
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center"/>
+                        <Button Grid.Column="1"
+                                Content="🛡️"
+                                Command="{Binding ToggleSanitizationPreviewCommand}"
+                                ToolTip.Tip="Toggle sanitization preview panel"
+                                Padding="8"
+                                FontSize="16"/>
+                    </Grid>
+                    
+                    <!-- Sanitization Preview Panel (Collapsible) -->
+                    <Border Grid.Row="1"
+                            IsVisible="{Binding ShowSanitizationPreview}"
+                            BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
+                            Padding="10"
+                            Margin="0,0,0,10"
+                            MaxHeight="300">
+                        <ScrollViewer>
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="{Binding SanitizationPreview}"
+                                           FontWeight="Bold"
+                                           Margin="0,0,0,10"/>
+                                
+                                <ItemsControl ItemsSource="{Binding SanitizationItems}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                                                    CornerRadius="4"
+                                                    Padding="8,5"
+                                                    Margin="0,2">
+                                                <Grid ColumnDefinitions="Auto,*,Auto,*">
+                                                    <TextBlock Grid.Column="0" 
+                                                               Text="{Binding Icon}"
+                                                               FontSize="14"
+                                                               Margin="0,0,8,0"/>
+                                                    <TextBlock Grid.Column="1" 
+                                                               Text="{Binding Original}"
+                                                               FontFamily="Consolas,Menlo,monospace"
+                                                               FontWeight="Bold"/>
+                                                    <TextBlock Grid.Column="2" 
+                                                               Text=" → "
+                                                               Margin="8,0"/>
+                                                    <TextBlock Grid.Column="3" 
+                                                               Text="{Binding Alias}"
+                                                               FontFamily="Consolas,Menlo,monospace"
+                                                               Foreground="Green"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Info Text -->
+                    <ScrollViewer Grid.Row="2">
+                        <TextBlock TextWrapping="Wrap"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+                            <Run Text="💡 Tip: Select files on the left, then click Copy."/>
+                            <LineBreak/>
+                            <Run Text="Sensitive data will be automatically replaced with safe aliases."/>
+                            <LineBreak/>
+                            <Run Text="Click the 🛡️ shield to see what will be protected."/>
+                        </TextBlock>
+                    </ScrollViewer>
+
+                    <Button Grid.Row="3"
+                            Content="📋 Copy Sanitized to Clipboard"
+                            Command="{Binding CopyToClipboardCommand}"
+                            ToolTip.Tip="Copy selected files with automatic sanitization (Ctrl+C)"
+                            IsEnabled="{Binding !IsLoading}"
+                            HorizontalAlignment="Center"
+                            Padding="30,12"
+                            Margin="0,10,0,0">
+                        <Button.Styles>
+                            <Style Selector="Button:disabled">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Style>
+                        </Button.Styles>
+                    </Button>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="2" 
+                Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                Padding="10,8">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                <!-- Loading Indicator -->
+                <Border Grid.Column="0"
+                        Width="16" Height="16"
+                        Margin="0,0,10,0"
+                        IsVisible="{Binding IsLoading}">
+                    <TextBlock Text="⏳" FontSize="14" VerticalAlignment="Center"/>
+                </Border>
+
+                <TextBlock Grid.Column="1" 
+                           Text="{Binding StatusText}"
+                           VerticalAlignment="Center"/>
+                
+                <StackPanel Grid.Column="3" 
+                            Orientation="Horizontal" 
+                            Spacing="15">
+                    <TextBlock VerticalAlignment="Center" 
+                               Text="{Binding SelectedFileCount, StringFormat='{}{0} files'}"
+                               ToolTip.Tip="Number of files selected"/>
+                    <TextBlock VerticalAlignment="Center" 
+                               Text="{Binding SanitizedValueCount, StringFormat='🔐 {0} masked'}"
+                               ToolTip.Tip="Number of sensitive values replaced with aliases"
+                               IsVisible="{Binding !!SanitizedValueCount}"/>
+                    <TextBlock VerticalAlignment="Center" 
+                               Text="{Binding TotalTokens, StringFormat='{}{0:N0} tokens'}"
+                               ToolTip.Tip="Total token count for selected model"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+
+</Window>

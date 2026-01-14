@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ShieldPrompt.App/ShieldPrompt.App.csproj" />
+    <Project Path="src/ShieldPrompt.Application/ShieldPrompt.Application.csproj" />
+    <Project Path="src/ShieldPrompt.Domain/ShieldPrompt.Domain.csproj" />
+    <Project Path="src/ShieldPrompt.Infrastructure/ShieldPrompt.Infrastructure.csproj" />
+    <Project Path="src/ShieldPrompt.Presentation/ShieldPrompt.Presentation.csproj" />
+    <Project Path="src/ShieldPrompt.Sanitization/ShieldPrompt.Sanitization.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ShieldPrompt.Tests.Unit/ShieldPrompt.Tests.Unit.csproj" />
+  </Folder>
+</Solution>

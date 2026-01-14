@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ShieldPrompt.Presentation.ViewModels"
+             x:Class="ShieldPrompt.Presentation.Views.FileTreeView">
+
+    <TreeView ItemsSource="{Binding Files}"
+              SelectionMode="Multiple">
+        <TreeView.ItemTemplate>
+            <TreeDataTemplate ItemsSource="{Binding Children}">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                    <CheckBox IsChecked="{Binding IsSelected}"
+                              VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding Icon}" 
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding Name}" 
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding TokenCount, StringFormat='({0} tokens)'}"
+                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                               VerticalAlignment="Center"
+                               IsVisible="{Binding !!TokenCount}"/>
+                </StackPanel>
+            </TreeDataTemplate>
+        </TreeView.ItemTemplate>
+    </TreeView>
+
+</UserControl>
+

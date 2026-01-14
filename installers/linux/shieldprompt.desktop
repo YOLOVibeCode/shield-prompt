@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Version=1.1
+Name=ShieldPrompt
+GenericName=Secure AI Prompt Generator
+Comment=Sanitize code before sharing with AI assistants
+Exec=shieldprompt %F
+Icon=shieldprompt
+Terminal=false
+Categories=Development;Utility;Security;IDE;
+Keywords=ai;chatgpt;claude;security;sanitization;prompt;enterprise;compliance;
+MimeType=text/plain;text/x-csharp;text/x-python;text/x-java;
+StartupWMClass=ShieldPrompt
+StartupNotify=true
+

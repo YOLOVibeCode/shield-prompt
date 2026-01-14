@@ -1,0 +1,664 @@
+# ShieldPrompt - Cursor AI Rules v1.0
+# Enterprise-Grade .NET Desktop Application for Secure AI Prompt Generation
+
+## Core Principles
+- ALL rules in this file MUST be honored verbatim
+- All roles are bound by Shared Rules AND their role-specific mandates (marked with ⚠️ MUST)
+- This is a security-focused application - fail-secure design is paramount
+
+---
+
+## Role System
+
+### Role Invocation
+Plain-English phrases automatically map to roles:
+- "You are a software developer." → ROLE: engineer STRICT=false
+- "You are a software architect." / "You are an architect." → ROLE: architect  
+- "You are Dev Ops." / "You are a devops engineer." → ROLE: devops
+- "You are QA." / "You are a QA analyst/engineer." → ROLE: qa
+
+**Default Role**: If no role is stated, assistant defaults to **ROLE: engineer STRICT=true**
+
+### ✨ ROLE BANNER RULE ✨ (NON-NEGOTIABLE)
+Every assistant reply MUST start and end with:
+```
+ROLE: <role> STRICT=<bool>
+```
+
+### 🚦 ROLE-SWITCH RULE – NO AUTO-SWITCHING 🚦
+1. Assistant must explicitly ASK for permission before changing to a role with broader/different privileges
+2. Role change occurs only after user says "yes"
+3. After approval: output banner → body → banner
+4. When task finishes, revert to default (ENGINEER STRICT=true) with banner
+
+---
+
+## Tech Stack
+
+| Layer | Technology | Notes |
+|-------|------------|-------|
+| **UI Framework** | Avalonia UI 11+ | Cross-platform XAML |
+| **Runtime** | .NET 8 LTS | Long-term support |
+| **Language** | C# 12 | Primary constructors, file-scoped namespaces |
+| **Architecture** | Clean Architecture | Domain → Application → Infrastructure |
+| **Testing** | xUnit + FluentAssertions | Real implementations over mocks |
+| **Tokenization** | TiktokenSharp | OpenAI tiktoken port |
+| **Clipboard** | TextCopy | Cross-platform |
+| **MVVM** | CommunityToolkit.Mvvm | Source generators |
+| **DI** | Microsoft.Extensions.DependencyInjection | Built-in DI |
+| **Config** | YAML + JSON | Pattern management |
+
+---
+
+## ⚠️ MANDATORY DEVELOPMENT PRINCIPLES - READ FIRST
+
+### 🧪 TEST-DRIVEN DEVELOPMENT (NON-NEGOTIABLE)
+
+**ALL business logic MUST be validated through tests BEFORE implementation.**
+
+```
+STRICT TDD WORKFLOW:
+1. RED    → Write a failing test first
+2. GREEN  → Write minimum code to pass
+3. REFACTOR → Clean up while keeping tests green
+```
+
+**TDD Rules:**
+- ⚠️ **MUST**: Write tests BEFORE implementation code
+- ⚠️ **MUST**: Each interface method has corresponding tests
+- ⚠️ **MUST**: Tests exercise full business workflows
+- ⚠️ **MUST**: No implementation without passing tests first
+- **Coverage targets**: 90% statements, 85% branches, 90% functions
+
+**Test Naming Convention:**
+```csharp
+// Pattern: MethodName_Scenario_ExpectedBehavior
+[Fact]
+public async Task SanitizeAsync_WithDatabaseName_ReturnsAliasedValue()
+{
+    // Arrange
+    var content = "Connect to ProductionDB";
+    
+    // Act  
+    var result = await _sut.SanitizeAsync(content);
+    
+    // Assert
+    result.SanitizedContent.Should().Be("Connect to DATABASE_0");
+    result.WasSanitized.Should().BeTrue();
+}
+
+[Theory]
+[InlineData("ProductionDB", true)]
+[InlineData("localhost", false)]
+[InlineData("192.168.1.1", true)]
+public async Task SanitizeAsync_WithVariousInputs_DetectsCorrectly(
+    string input, bool shouldSanitize)
+{
+    var result = await _sut.SanitizeAsync(input);
+    result.WasSanitized.Should().Be(shouldSanitize);
+}
+```
+
+### 🔌 INTERFACE SEGREGATION PRINCIPLE (NON-NEGOTIABLE)
+
+**NOTHING should be created unless it's through a properly segregated interface.**
+
+**ISP Rules:**
+- ⚠️ **MUST**: ALL business logic implements interfaces
+- ⚠️ **MUST**: NO direct class instantiation - only through interface contracts
+- ⚠️ **MUST**: Clients depend ONLY on methods they actually use
+- ⚠️ **MUST**: Interfaces are behavioral contracts, NOT implementation blueprints
+- ⚠️ **MUST**: Maximum 10 methods per interface - split if larger
+
+**Interface Segregation Examples:**
+```csharp
+// ❌ REJECT - God interface
+public interface ISanitizationService
+{
+    Task<string> SanitizeAsync(string content);
+    Task<string> DesanitizeAsync(string content);
+    void AddPattern(Pattern pattern);
+    void RemovePattern(string name);
+    IEnumerable<Pattern> GetPatterns();
+    Task<AuditEntry> LogAsync(AuditEntry entry);
+    IEnumerable<AuditEntry> GetAuditLog();
+    // ... 20+ more methods
+}
+
+// ✅ REQUIRE - Segregated interfaces
+public interface ISanitizationEngine
+{
+    Task<SanitizationResult> SanitizeAsync(string content, SanitizationOptions options);
+}
+
+public interface IDesanitizationEngine
+{
+    Task<DesanitizationResult> DesanitizeAsync(string content, IMappingSession session);
+}
+
+public interface IPatternRegistry
+{
+    void AddPattern(Pattern pattern);
+    void RemovePattern(string name);
+    IEnumerable<Pattern> GetPatterns();
+}
+
+public interface IAuditLogger
+{
+    Task LogAsync(AuditEntry entry);
+    IAsyncEnumerable<AuditEntry> GetEntriesAsync(AuditQuery query);
+}
+```
+
+### 🎯 SIMPLICITY FIRST (CRITICAL)
+
+**DO NOT OVERCOMPLICATE. Keep it simple, focused, and practical.**
+
+- **KISS Principle**: Keep It Simple, Stupid
+- **YAGNI**: You Aren't Gonna Need It - no premature abstractions
+- **DRY**: Don't Repeat Yourself - but don't over-abstract
+- **Avoid over-engineering** - resist architectural speculation
+- **Prefer composition over inheritance**
+- **No design patterns until absolutely necessary**
+- **Always read README.md or root markdown to refresh context**
+
+---
+
+## .NET Best Practices (MANDATORY)
+
+### C# Coding Standards
+
+```csharp
+// ✅ Use file-scoped namespaces
+namespace ShieldPrompt.Sanitization.Engine;
+
+// ✅ Use primary constructors for DI
+public class SanitizationEngine(
+    IPatternRegistry patternRegistry,
+    IMappingSession session,
+    ILogger<SanitizationEngine> logger) : ISanitizationEngine
+{
+    public async Task<SanitizationResult> SanitizeAsync(string content, SanitizationOptions options)
+    {
+        // Implementation
+    }
+}
+
+// ✅ Prefer records for DTOs and immutable types
+public record SanitizationResult(
+    string SanitizedContent,
+    bool WasSanitized,
+    IReadOnlyList<SanitizationMatch> Matches);
+
+public record SanitizationMatch(
+    string Original,
+    string Alias,
+    PatternCategory Category,
+    int StartIndex,
+    int Length);
+
+// ✅ Use init-only properties for configuration
+public class SanitizationOptions
+{
+    public bool EnableInfrastructure { get; init; } = true;
+    public bool EnablePII { get; init; } = true;
+    public PolicyMode Mode { get; init; } = PolicyMode.SanitizedOnly;
+}
+```
+
+### Naming Conventions
+
+| Type | Convention | Example |
+|------|------------|---------|
+| **Interfaces** | `I` prefix + PascalCase | `ISanitizationEngine` |
+| **Async methods** | `Async` suffix | `SanitizeAsync` |
+| **Private fields** | `_camelCase` | `_patternRegistry` |
+| **Constants** | PascalCase (not SCREAMING) | `MaxPatternLength` |
+| **Extension methods** | `{Type}Extensions` | `StringExtensions` |
+| **Test classes** | `{ClassUnderTest}Tests` | `SanitizationEngineTests` |
+
+### Result Pattern (No Exceptions for Flow Control)
+
+```csharp
+// ✅ Use Result<T> for operations that can fail
+public readonly record struct Result<T>
+{
+    public T? Value { get; }
+    public string? Error { get; }
+    public bool IsSuccess => Error is null;
+    
+    public static Result<T> Success(T value) => new() { Value = value };
+    public static Result<T> Failure(string error) => new() { Error = error };
+}
+
+// Usage
+public async Task<Result<SanitizationResult>> TrySanitizeAsync(string content)
+{
+    try
+    {
+        var result = await SanitizeAsync(content);
+        return Result<SanitizationResult>.Success(result);
+    }
+    catch (PatternException ex)
+    {
+        return Result<SanitizationResult>.Failure(ex.Message);
+    }
+}
+```
+
+### Dependency Injection Pattern
+
+```csharp
+// ✅ Register services in extension methods
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddSanitizationServices(
+        this IServiceCollection services)
+    {
+        // Singletons - shared across app
+        services.AddSingleton<IPatternRegistry, PatternRegistry>();
+        services.AddSingleton<IAliasGenerator, AliasGenerator>();
+        
+        // Scoped - per operation/session
+        services.AddScoped<IMappingSession, MappingSession>();
+        services.AddScoped<ISanitizationEngine, SanitizationEngine>();
+        services.AddScoped<IDesanitizationEngine, DesanitizationEngine>();
+        
+        return services;
+    }
+}
+```
+
+### Async/Await Best Practices
+
+```csharp
+// ✅ Use ConfigureAwait(false) in library code
+public async Task<string> ProcessAsync()
+{
+    var result = await _service.ExecuteAsync().ConfigureAwait(false);
+    return await TransformAsync(result).ConfigureAwait(false);
+}
+
+// ✅ Use ValueTask for hot paths that often complete synchronously
+public ValueTask<Pattern?> GetPatternAsync(string name)
+{
+    if (_cache.TryGetValue(name, out var pattern))
+        return ValueTask.FromResult<Pattern?>(pattern);
+    
+    return new ValueTask<Pattern?>(LoadPatternAsync(name));
+}
+
+// ✅ Always honor CancellationToken
+public async Task<SanitizationResult> SanitizeAsync(
+    string content, 
+    CancellationToken cancellationToken = default)
+{
+    cancellationToken.ThrowIfCancellationRequested();
+    // ... implementation
+}
+```
+
+### Memory Efficiency
+
+```csharp
+// ✅ Use Span<T> for string processing in hot paths
+public static ReadOnlySpan<char> Sanitize(ReadOnlySpan<char> input)
+{
+    // Avoid allocations
+}
+
+// ✅ Use ArrayPool for temporary buffers
+var buffer = ArrayPool<byte>.Shared.Rent(4096);
+try
+{
+    // Use buffer
+}
+finally
+{
+    ArrayPool<byte>.Shared.Return(buffer);
+}
+
+// ✅ Use StringBuilder for concatenation
+var sb = new StringBuilder(estimatedCapacity);
+foreach (var item in items)
+{
+    sb.Append(item);
+}
+```
+
+---
+
+## Project Architecture
+
+### Clean Architecture Layers
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            ShieldPrompt Application                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  ┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐      │
+│  │   Presentation   │    │    Application   │    │   Infrastructure │      │
+│  │      Layer       │    │      Layer       │    │      Layer       │      │
+│  ├──────────────────┤    ├──────────────────┤    ├──────────────────┤      │
+│  │  • Views (AXAML) │    │  • Services      │    │  • FileSystem    │      │
+│  │  • ViewModels    │◄──►│  • Interfaces    │◄──►│  • Clipboard     │      │
+│  │  • Converters    │    │  • DTOs          │    │  • Settings      │      │
+│  └──────────────────┘    └──────────────────┘    └──────────────────┘      │
+│                                                                              │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │                           Domain Layer                                │  │
+│  ├──────────────────────────────────────────────────────────────────────┤  │
+│  │  • Entities        • Value Objects       • Enums                     │  │
+│  │  • Domain Events   • Domain Services     • Specifications            │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Layer Dependency Rules
+
+| Layer | Can Reference | Cannot Reference |
+|-------|---------------|------------------|
+| **Domain** | Nothing (pure) | Application, Infrastructure, Presentation |
+| **Application** | Domain | Infrastructure, Presentation |
+| **Infrastructure** | Domain, Application | Presentation |
+| **Presentation** | Domain, Application | Infrastructure (via DI only) |
+
+### Project Structure
+
+```
+ShieldPrompt/
+├── src/
+│   ├── ShieldPrompt.App/                  # Entry point, DI setup
+│   ├── ShieldPrompt.Presentation/         # UI (Views, ViewModels)
+│   ├── ShieldPrompt.Application/          # Business logic services
+│   ├── ShieldPrompt.Domain/               # Pure domain models
+│   ├── ShieldPrompt.Infrastructure/       # External concerns
+│   └── ShieldPrompt.Sanitization/         # Sanitization engine
+│
+├── tests/
+│   ├── ShieldPrompt.Tests.Unit/           # Unit tests (fast, isolated)
+│   ├── ShieldPrompt.Tests.Integration/    # Integration tests
+│   └── ShieldPrompt.Tests.Architecture/   # Architecture compliance
+│
+└── config/
+    ├── default-patterns.yaml              # Built-in sanitization patterns
+    └── model-profiles.json                # AI model configurations
+```
+
+---
+
+## SIZE THRESHOLDS (.NET)
+
+| Metric | Limit | Rationale |
+|--------|-------|-----------|
+| **File Length** | 500 lines max | C# files include XML docs |
+| **Method** | 50 lines max | Single responsibility |
+| **Class** | 400 lines max | Domain-focused |
+| **Interface** | 10 methods max | Apply ISP |
+| **Constructor Parameters** | 7 max | Use options pattern |
+| **Cyclomatic Complexity** | 10 max | Per method |
+| **Nesting Depth** | 4 levels max | Use guard clauses |
+
+### When Limits Are Exceeded
+
+```
+If Class > 400 lines:
+  → Split by responsibility
+  → Apply Single Responsibility Principle
+  → Extract helper classes
+
+If Interface > 10 methods:
+  → Apply Interface Segregation
+  → Create focused interfaces (IReader, IWriter)
+  → Consider Command/Query separation
+
+If Method > 50 lines:
+  → Extract private methods
+  → Use early returns / guard clauses
+  → Consider strategy pattern for complex logic
+```
+
+---
+
+## Testing Standards
+
+### Test Project Structure
+
+```csharp
+// Test fixture with real implementations (prefer over mocks)
+public class SanitizationEngineTests
+{
+    private readonly ISanitizationEngine _sut;
+    private readonly InMemoryPatternRegistry _patternRegistry;
+    private readonly InMemoryMappingSession _session;
+    
+    public SanitizationEngineTests()
+    {
+        _patternRegistry = new InMemoryPatternRegistry();
+        _patternRegistry.AddPattern(new Pattern("Database", @"(Prod|Dev).*DB", PatternCategory.Database));
+        
+        _session = new InMemoryMappingSession();
+        
+        _sut = new SanitizationEngine(_patternRegistry, _session, NullLogger<SanitizationEngine>.Instance);
+    }
+    
+    [Fact]
+    public async Task SanitizeAsync_WithServerName_ReturnsAlias()
+    {
+        // Arrange
+        var content = "Query ProductionDB";
+        
+        // Act
+        var result = await _sut.SanitizeAsync(content, new SanitizationOptions());
+        
+        // Assert
+        result.WasSanitized.Should().BeTrue();
+        result.SanitizedContent.Should().Be("Query DATABASE_0");
+        result.Matches.Should().ContainSingle()
+            .Which.Original.Should().Be("ProductionDB");
+    }
+}
+```
+
+### Real Implementations Over Mocks (CRITICAL)
+
+**NEVER use mocks when a real local implementation is feasible.**
+
+```csharp
+// ❌ BAD - Mock that doesn't test real behavior
+var mockRegistry = Substitute.For<IPatternRegistry>();
+mockRegistry.GetPatterns().Returns(new[] { testPattern });
+
+// ✅ GOOD - Real in-memory implementation
+var registry = new InMemoryPatternRegistry();
+registry.AddPattern(testPattern);
+// Tests actual pattern matching behavior
+```
+
+### When Mocks Are Acceptable (RARE)
+
+- External paid APIs with no free tier
+- Hardware interfaces not available locally
+- Third-party services with complex authentication
+- BUT EVEN THEN: Prefer stub services over pure mocks
+
+---
+
+## Security-First Development (CRITICAL FOR THIS PROJECT)
+
+### Fail-Secure Design
+
+```csharp
+// ✅ Always fail secure - block on error, never leak
+public async Task<SanitizationResult> SanitizeAsync(string content)
+{
+    try
+    {
+        return await ProcessSanitizationAsync(content);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Sanitization failed - blocking content");
+        
+        // FAIL SECURE: Return blocked result, don't pass through original
+        return new SanitizationResult(
+            SanitizedContent: "[CONTENT BLOCKED - SANITIZATION ERROR]",
+            WasSanitized: true,
+            Matches: Array.Empty<SanitizationMatch>(),
+            Error: "Sanitization failed - content blocked for safety");
+    }
+}
+```
+
+### Never Log Sensitive Data
+
+```csharp
+// ✅ CORRECT - Log metadata, not content
+_logger.LogInformation(
+    "Sanitized content: {MatchCount} sensitive values found in {Category}",
+    result.Matches.Count,
+    result.Matches.FirstOrDefault()?.Category);
+
+// ❌ NEVER DO THIS
+_logger.LogDebug("Original content: {Content}", originalContent);
+_logger.LogDebug("Mapping: {Original} -> {Alias}", mapping.Original, mapping.Alias);
+```
+
+### Secure Session Management
+
+```csharp
+// ✅ Sessions in memory only, cleared on exit
+public class MappingSession : IMappingSession, IDisposable
+{
+    private readonly Dictionary<string, string> _mappings = new();
+    private readonly object _lock = new();
+    
+    public void Dispose()
+    {
+        lock (_lock)
+        {
+            // Secure clear - overwrite before clearing
+            foreach (var key in _mappings.Keys.ToList())
+            {
+                _mappings[key] = new string('0', _mappings[key].Length);
+            }
+            _mappings.Clear();
+        }
+    }
+}
+```
+
+---
+
+## What NOT to Do
+
+| ❌ Don't | ✅ Do Instead |
+|---------|---------------|
+| Use `dynamic` or `var` when type is unclear | Use explicit types |
+| Catch `Exception` without re-throwing or logging | Handle specific exceptions |
+| Use `Task.Result` or `Task.Wait()` | Use `await` (prevents deadlocks) |
+| Log sensitive data (passwords, tokens, PII) | Log metadata only |
+| Use string concatenation for SQL | Use parameterized queries |
+| Ignore `CancellationToken` parameters | Always honor cancellation |
+| Create new `HttpClient` instances directly | Use `IHttpClientFactory` |
+| Use `Thread.Sleep` | Use `Task.Delay` |
+| Suppress warnings without documented reason | Fix the warning or document why |
+| Use `any` equivalent (object casting) | Use proper generics |
+| Write implementation before tests | TDD: test first, always |
+| Create god interfaces (>10 methods) | Apply ISP, split interfaces |
+
+---
+
+## Safety Rails
+
+### General Rules
+- Never delete/refactor/optimize/remove files without approval
+- Preserve comments & existing style
+- Assume code has purpose
+- Present simpler alternative with confidence (1–10) before edits
+
+### Security-Specific
+- Never expose original sensitive values in logs, errors, or UI
+- Always validate input at boundaries
+- Fail secure - block rather than pass through
+- Clear sensitive data from memory when no longer needed
+
+---
+
+## Response Format
+
+```
+[code]
+Edge cases handled: [list]
+Tests written: [list test methods]
+Security considerations: [list]
+Potential refactors (not implemented): [list]
+```
+
+---
+
+## Self-Check Before Submitting
+
+- [ ] Tests written FIRST (TDD)
+- [ ] All interfaces segregated (<10 methods)
+- [ ] No `any` types or unsafe casts
+- [ ] Async methods use CancellationToken
+- [ ] No sensitive data in logs
+- [ ] Fail-secure error handling
+- [ ] Classes under 400 lines
+- [ ] Methods under 50 lines
+- [ ] Constructor parameters ≤ 7
+- [ ] Uses GlobalUsings.* for common imports
+- [ ] XML documentation on public APIs
+- [ ] STRICT mode honored
+
+---
+
+## Shell Commands
+
+```bash
+/bin/zsh -i -c 'source ~/.zshrc && <cmd>'
+```
+
+---
+
+## Key Commands
+
+```bash
+# Build
+dotnet build
+
+# Run tests (TDD - run often!)
+dotnet test
+dotnet test --filter "FullyQualifiedName~SanitizationEngine"
+dotnet test --collect:"XPlat Code Coverage"
+
+# Run application
+dotnet run --project src/ShieldPrompt.App
+
+# Watch mode (development)
+dotnet watch run --project src/ShieldPrompt.App
+
+# Format code
+dotnet format
+
+# Analyze code
+dotnet build /p:TreatWarningsAsErrors=true
+```
+
+---
+
+## Reference Documents
+
+When explaining decisions, reference:
+1. **SPECIFICATION.md** - Full product specification
+2. **README.md** - Project overview
+3. **architecture-checklist.md** - If present, follow strictly
+
+---
+
+**Remember: This is a SECURITY-FOCUSED application. When in doubt, fail secure.**
+
+**Last Updated:** January 14, 2026  
+**Status:** ACTIVE - ENFORCED
+
