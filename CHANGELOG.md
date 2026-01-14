@@ -15,6 +15,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Chocolatey package
 - Audit logging to SQLite
 
+## [1.0.1] - 2026-01-14
+
+### Fixed
+- **GitHub Actions Build Failures** - Fixed executable naming inconsistencies
+  - Added AssemblyName property for clean executable names
+  - Windows now outputs `ShieldPrompt.exe` (was `ShieldPrompt.App.exe`)
+  - macOS/Linux now output `ShieldPrompt` (was `ShieldPrompt.App`)
+  
+### Added
+- **Application Icons** - Created professional shield icon assets
+  - macOS: icon.icns (multi-resolution)
+  - Linux: icon.png (256x256)
+  - SVG source for future modifications
+  
+### Improved
+- **GitHub Actions Workflow** - Enhanced with validation and debugging
+  - Added verification steps after each build
+  - Added debug output on failures
+  - Added chmod +x for Linux executables
+  - Improved error messages
+
+### Technical
+- Build script updated to use clean executable names
+- All 180 tests still passing
+- No breaking changes to functionality
+
 ## [1.0.0] - 2026-01-14
 
 ### Added - Core Features

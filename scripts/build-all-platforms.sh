@@ -86,21 +86,21 @@ echo "📦 Creating portable archives..."
 
 # Windows portable
 cd "$OUTPUT_DIR/win-x64"
-zip "../ShieldPrompt-${VERSION}-win-x64-portable.zip" ShieldPrompt.App.exe
+zip "../ShieldPrompt-${VERSION}-win-x64-portable.zip" ShieldPrompt.exe
 cd ../..
 
 # macOS portable (if on macOS)
 if [[ "$OSTYPE" == "darwin"* ]]; then
     echo "Creating macOS universal binary..."
     lipo -create -output "$OUTPUT_DIR/ShieldPrompt-universal" \
-        "$OUTPUT_DIR/osx-x64/ShieldPrompt.App" \
-        "$OUTPUT_DIR/osx-arm64/ShieldPrompt.App"
+        "$OUTPUT_DIR/osx-x64/ShieldPrompt" \
+        "$OUTPUT_DIR/osx-arm64/ShieldPrompt"
     chmod +x "$OUTPUT_DIR/ShieldPrompt-universal"
 fi
 
 # Linux portable
 cd "$OUTPUT_DIR/linux-x64"
-tar -czf "../ShieldPrompt-${VERSION}-linux-x64.tar.gz" ShieldPrompt.App
+tar -czf "../ShieldPrompt-${VERSION}-linux-x64.tar.gz" ShieldPrompt
 cd ../..
 
 # Generate checksums

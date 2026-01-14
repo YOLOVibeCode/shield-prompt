@@ -69,6 +69,16 @@ jobs:
             -p:Version=${{ steps.version.outputs.VERSION }} `
             -o publish/win-x64
       
+      - name: Verify Windows x64 build
+        shell: bash
+        run: |
+          if [ ! -f "publish/win-x64/ShieldPrompt.exe" ]; then
+            echo "❌ ERROR: ShieldPrompt.exe not found!"
+            ls -la publish/win-x64/
+            exit 1
+          fi
+          echo "✅ Windows x64 build verified"
+      
       - name: Publish Windows ARM64
         run: |
           dotnet publish src/ShieldPrompt.App/ShieldPrompt.App.csproj `
@@ -81,11 +91,31 @@ jobs:
             -p:Version=${{ steps.version.outputs.VERSION }} `
             -o publish/win-arm64
       
+      - name: Verify Windows ARM64 build
+        shell: bash
+        run: |
+          if [ ! -f "publish/win-arm64/ShieldPrompt.exe" ]; then
+            echo "❌ ERROR: ShieldPrompt.exe not found!"
+            ls -la publish/win-arm64/
+            exit 1
+          fi
+          echo "✅ Windows ARM64 build verified"
+      
       - name: Create portable ZIP
         shell: bash
         run: |
           cd publish/win-x64
           7z a ../ShieldPrompt-${{ steps.version.outputs.VERSION }}-win-x64-portable.zip ShieldPrompt.exe
+      
+      - name: Debug on failure
+        if: failure()
+        shell: bash
+        run: |
+          echo "❌ Windows build failed! Debug info:"
+          echo "Directory structure:"
+          ls -R publish/ || echo "No publish directory"
+          echo ".NET version:"
+          dotnet --version
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -133,12 +163,27 @@ jobs:
             -p:Version=${{ steps.version.outputs.VERSION }} \
             -o publish/osx-x64
       
+      - name: Verify macOS builds
+        run: |
+          if [ ! -f "publish/osx-arm64/ShieldPrompt" ]; then
+            echo "❌ ERROR: macOS ARM64 build not found!"
+            ls -la publish/osx-arm64/
+            exit 1
+          fi
+          if [ ! -f "publish/osx-x64/ShieldPrompt" ]; then
+            echo "❌ ERROR: macOS x64 build not found!"
+            ls -la publish/osx-x64/
+            exit 1
+          fi
+          echo "✅ macOS builds verified"
+      
       - name: Create Universal Binary
         run: |
           lipo -create -output publish/ShieldPrompt \
             publish/osx-x64/ShieldPrompt \
             publish/osx-arm64/ShieldPrompt
           chmod +x publish/ShieldPrompt
+          echo "✅ Universal binary created"
       
       - name: Create .app Bundle
         run: |
@@ -155,6 +200,15 @@ jobs:
       - name: Create ZIP for distribution
         run: |
           zip -r publish/ShieldPrompt-${{ steps.version.outputs.VERSION }}-osx-universal.zip ShieldPrompt.app
+      
+      - name: Debug on failure
+        if: failure()
+        run: |
+          echo "❌ macOS build failed! Debug info:"
+          echo "Directory structure:"
+          ls -R publish/ || echo "No publish directory"
+          echo "Xcode version:"
+          xcodebuild -version || echo "N/A"
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -189,6 +243,16 @@ jobs:
             -p:Version=${{ steps.version.outputs.VERSION }} \
             -o publish/linux-x64
       
+      - name: Verify Linux build
+        run: |
+          if [ ! -f "publish/linux-x64/ShieldPrompt" ]; then
+            echo "❌ ERROR: Linux build not found!"
+            ls -la publish/linux-x64/
+            exit 1
+          fi
+          chmod +x publish/linux-x64/ShieldPrompt
+          echo "✅ Linux x64 build verified"
+      
       - name: Create AppImage
         run: |
           # Install appimagetool
@@ -206,6 +270,7 @@ jobs:
           cp installers/linux/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/shieldprompt.png
           cp installers/linux/AppRun AppDir/
           chmod +x AppDir/AppRun
+          chmod +x AppDir/usr/bin/ShieldPrompt
           
           # Build
           ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir \
@@ -221,6 +286,7 @@ jobs:
           
           # Copy files
           cp publish/linux-x64/ShieldPrompt deb-package/usr/lib/shieldprompt/
+          chmod +x deb-package/usr/lib/shieldprompt/ShieldPrompt
           ln -s ../lib/shieldprompt/ShieldPrompt deb-package/usr/bin/shieldprompt
           cp installers/linux/shieldprompt.desktop deb-package/usr/share/applications/
           cp installers/linux/icon.png deb-package/usr/share/icons/hicolor/256x256/apps/
@@ -242,6 +308,15 @@ jobs:
           # Build
           dpkg-deb --build deb-package \
             publish/ShieldPrompt-${{ steps.version.outputs.VERSION }}-amd64.deb
+      
+      - name: Debug on failure
+        if: failure()
+        run: |
+          echo "❌ Linux build failed! Debug info:"
+          echo "Directory structure:"
+          ls -R publish/ || echo "No publish directory"
+          echo "Available tools:"
+          which dpkg-deb appimagetool || echo "Tools not found"
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

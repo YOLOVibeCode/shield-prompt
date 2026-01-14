@@ -1,0 +1,19 @@
+<svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield background -->
+  <path d="M 512,100 L 800,250 L 800,550 L 512,900 L 224,550 L 224,250 Z" 
+        fill="#4A90E2" 
+        stroke="#2C5F9E" 
+        stroke-width="20"/>
+  
+  <!-- Checkmark -->
+  <path d="M 350,500 L 450,620 L 700,350" 
+        fill="none" 
+        stroke="white" 
+        stroke-width="80" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
+  
+  <!-- Text -->
+  <text x="512" y="980" font-family="Arial" font-size="120" 
+        fill="white" text-anchor="middle" font-weight="bold">SHIELD</text>
+</svg>
