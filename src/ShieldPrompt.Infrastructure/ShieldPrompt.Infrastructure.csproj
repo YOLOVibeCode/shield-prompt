@@ -8,10 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Version="10.0.2" />
+    <PackageReference Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ShieldPrompt.Domain\ShieldPrompt.Domain.csproj" />
+    <ProjectReference Include="..\ShieldPrompt.Application\ShieldPrompt.Application.csproj" />
   </ItemGroup>
 
 </Project>

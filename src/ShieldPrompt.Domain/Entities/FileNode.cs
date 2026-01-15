@@ -36,6 +36,11 @@ public class FileNode
     public bool IsSelected { get; set; }
 
     /// <summary>
+    /// The text content of the file (empty for directories).
+    /// </summary>
+    public string Content { get; set; } = string.Empty;
+
+    /// <summary>
     /// Child nodes (files/directories within this directory).
     /// </summary>
     public IReadOnlyList<FileNode> Children => _children.AsReadOnly();
