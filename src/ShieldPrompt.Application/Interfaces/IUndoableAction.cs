@@ -36,5 +36,16 @@ public interface IUndoableAction
     /// Merges this action with another for batch undo.
     /// </summary>
     IUndoableAction MergeWith(IUndoableAction other);
+
+    /// <summary>
+    /// Whether this action requires user confirmation before undo.
+    /// Default: false. Set to true for destructive/important operations.
+    /// </summary>
+    bool RequiresConfirmation => false;
+
+    /// <summary>
+    /// Confirmation message to show user before undo (if RequiresConfirmation is true).
+    /// </summary>
+    string? ConfirmationMessage => null;
 }
 

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ShieldPrompt.Application.Interfaces;
+using ShieldPrompt.Application.Services.UndoRedo;
 using ShieldPrompt.Domain.Entities;
 using ShieldPrompt.Sanitization.Interfaces;
 using TextCopy;
@@ -21,6 +22,7 @@ public partial class PasteRestoreViewModel : ViewModelBase
     private readonly IFileWriterService _fileWriter;
     private readonly IEnumerable<FileNode> _originalFiles;
     private readonly string _baseDirectory;
+    private readonly IUndoRedoManager? _undoRedoManager;
 
     [ObservableProperty]
     private string _pastedContent = string.Empty;
@@ -49,7 +51,8 @@ public partial class PasteRestoreViewModel : ViewModelBase
         IAIResponseParser aiParser,
         IFileWriterService fileWriter,
         IEnumerable<FileNode> originalFiles,
-        string baseDirectory)
+        string baseDirectory,
+        IUndoRedoManager? undoRedoManager = null)
     {
         _desanitizationEngine = desanitizationEngine;
         _session = session;
@@ -57,6 +60,7 @@ public partial class PasteRestoreViewModel : ViewModelBase
         _fileWriter = fileWriter;
         _originalFiles = originalFiles;
         _baseDirectory = baseDirectory;
+        _undoRedoManager = undoRedoManager;
     }
 
     public ObservableCollection<AliasMapping> DetectedAliases { get; } = new();
@@ -170,6 +174,13 @@ public partial class PasteRestoreViewModel : ViewModelBase
                 if (result.FilesDeleted > 0) summary.Add($"{result.FilesDeleted} deleted");
 
                 PreviewSummary = $"✅ Files {string.Join(", ", summary)}! (Backup: {result.BackupId})";
+                
+                // Add to undo stack with confirmation requirement
+                if (_undoRedoManager != null && !string.IsNullOrEmpty(result.BackupId))
+                {
+                    var undoAction = new FileUpdateAction(result.BackupId, result, _fileWriter);
+                    await _undoRedoManager.ExecuteAsync(undoAction);
+                }
             }
 
             // Update file preview list

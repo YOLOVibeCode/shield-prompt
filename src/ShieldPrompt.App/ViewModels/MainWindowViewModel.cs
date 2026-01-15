@@ -281,6 +281,19 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanUndo))]
     private async Task UndoAsync()
     {
+        // Check if action requires confirmation
+        var action = _undoRedoManager.PeekUndo();
+        if (action?.RequiresConfirmation == true)
+        {
+            // Show confirmation dialog (simplified for now - will enhance with proper dialog)
+            var message = action.ConfirmationMessage ?? "Are you sure you want to undo this action?";
+            StatusText = $"⚠️ Confirmation needed: {action.Description}";
+            
+            // For now, we'll undo with a warning message
+            // TODO: Add proper confirmation dialog in future version
+            StatusText = "⚠️ Undoing AI file changes...";
+        }
+        
         await _undoRedoManager.UndoAsync();
         StatusText = $"↶ Undone: {_undoRedoManager.RedoDescription ?? "action"}";
     }
@@ -457,7 +470,8 @@ public partial class MainWindowViewModel : ViewModelBase
                     _aiParser,
                     _fileWriter,
                     selectedFiles,
-                    baseDir)
+                    baseDir,
+                    _undoRedoManager)
             };
 
             if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)

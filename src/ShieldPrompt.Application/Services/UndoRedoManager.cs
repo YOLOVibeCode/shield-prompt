@@ -89,6 +89,11 @@ public class UndoRedoManager : IUndoRedoManager
         OnStateChanged();
     }
 
+    public IUndoableAction? PeekUndo()
+    {
+        return CanUndo ? _undoStack.Peek() : null;
+    }
+
     private void OnStateChanged()
     {
         StateChanged?.Invoke(this, EventArgs.Empty);

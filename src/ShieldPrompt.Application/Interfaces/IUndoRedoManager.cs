@@ -50,5 +50,11 @@ public interface IUndoRedoManager
     /// Event raised when undo/redo state changes.
     /// </summary>
     event EventHandler? StateChanged;
+
+    /// <summary>
+    /// Peeks at the next undo action without removing it.
+    /// Used to check if confirmation is required.
+    /// </summary>
+    IUndoableAction? PeekUndo();
 }
 
