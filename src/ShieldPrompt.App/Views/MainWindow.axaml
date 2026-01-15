@@ -167,9 +167,10 @@
         </StackPanel>
 
         <!-- Main Content Area -->
-        <Grid Grid.Row="2" ColumnDefinitions="300,*" Margin="10,0">
+        <Grid Grid.Row="2" ColumnDefinitions="300,Auto,*" Margin="10,0">
             <!-- File Tree (Left Panel) -->
-            <Border Grid.Column="0" 
+            <Border Grid.Column="0"
+                    MinWidth="200" 
                     BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
                     BorderThickness="1"
                     CornerRadius="4"
@@ -201,8 +202,27 @@
                 </ScrollViewer>
             </Border>
 
+            <!-- Horizontal GridSplitter (Draggable) -->
+            <GridSplitter Grid.Column="1"
+                          Width="6"
+                          Background="Transparent"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          ToolTip.Tip="Drag to resize panels (double-click to reset)">
+                <GridSplitter.Styles>
+                    <Style Selector="GridSplitter">
+                        <Setter Property="Background" Value="Transparent"/>
+                    </Style>
+                    <Style Selector="GridSplitter:pointerover">
+                        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightBaseMediumBrush}"/>
+                        <Setter Property="Cursor" Value="SizeWestEast"/>
+                    </Style>
+                </GridSplitter.Styles>
+            </GridSplitter>
+
             <!-- Preview/Output Area (Right Panel) -->
-            <Border Grid.Column="1"
+            <Border Grid.Column="2"
+                    MinWidth="400"
                     BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
                     BorderThickness="1"
                     CornerRadius="4"
