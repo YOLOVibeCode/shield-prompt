@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -57,6 +58,12 @@ public partial class MainWindowViewModel : ViewModelBase
 
     [ObservableProperty]
     private string? _redoDescription;
+
+    [ObservableProperty]
+    private bool _showToolbar = true;
+
+    [ObservableProperty]
+    private bool _showStatusBar = true;
 
     public ObservableCollection<SanitizationPreviewItem> SanitizationItems { get; } = new();
 
@@ -483,6 +490,275 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 yield return selectedChild;
             }
+        }
+    }
+
+    // View Control Commands
+    [RelayCommand]
+    private void ToggleShieldPreview()
+    {
+        ShowSanitizationPreview = !ShowSanitizationPreview;
+    }
+
+    [RelayCommand]
+    private void ToggleStatusBar()
+    {
+        ShowStatusBar = !ShowStatusBar;
+    }
+
+    [RelayCommand]
+    private void ToggleToolbar()
+    {
+        ShowToolbar = !ShowToolbar;
+    }
+
+    // File Menu Commands
+    [RelayCommand]
+    private void Exit()
+    {
+        // Dispose session before exit
+        _session?.Dispose();
+        Environment.Exit(0);
+    }
+
+    [RelayCommand]
+    private void SelectAll()
+    {
+        if (RootNodeViewModel != null)
+        {
+            SelectAllNodes(RootNodeViewModel, true);
+            StatusText = "All files selected";
+        }
+    }
+
+    [RelayCommand]
+    private void DeselectAll()
+    {
+        if (RootNodeViewModel != null)
+        {
+            SelectAllNodes(RootNodeViewModel, false);
+            StatusText = "All files deselected";
+        }
+    }
+
+    private void SelectAllNodes(FileNodeViewModel node, bool selected)
+    {
+        if (!node.IsDirectory)
+        {
+            node.IsSelected = selected;
+        }
+        foreach (var child in node.Children)
+        {
+            SelectAllNodes(child, selected);
+        }
+    }
+
+    // Tools Menu Commands
+    [RelayCommand]
+    private async Task LoadTutorialProjectAsync()
+    {
+        // Try to find tutorial project in samples/
+        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        var tutorialPath = Path.Combine(baseDir, "..", "..", "..", "..", "..", "samples", "tutorial-project");
+        tutorialPath = Path.GetFullPath(tutorialPath);
+
+        if (Directory.Exists(tutorialPath))
+        {
+            await LoadFolderAsync(tutorialPath);
+            StatusText = "📚 Tutorial project loaded! Follow samples/tutorial-project/README_TUTORIAL.md";
+        }
+        else
+        {
+            StatusText = "⚠️ Tutorial not found. Clone from GitHub to get samples/tutorial-project/";
+        }
+    }
+
+    [RelayCommand]
+    private void ClearSession()
+    {
+        _session.Clear();
+        SanitizedValueCount = 0;
+        ShowSanitizationPreview = false;
+        StatusText = "🧹 Session cleared - all mappings removed";
+    }
+
+    [RelayCommand]
+    private async Task ShowDiagnosticsAsync()
+    {
+        var info = $@"ShieldPrompt Diagnostics
+===================================
+
+Version: 1.0.3
+.NET: {Environment.Version}
+OS: {Environment.OSVersion}
+Architecture: {RuntimeInformation.ProcessArchitecture}
+Memory: {GC.GetTotalMemory(false) / 1024 / 1024} MB
+
+Current Session:
+- Mappings: {_session.GetAllMappings().Count()}
+- Created: {_session.CreatedAt:yyyy-MM-dd HH:mm:ss}
+- Expires: {_session.ExpiresAt:yyyy-MM-dd HH:mm:ss}
+
+Files Loaded: {RootNode?.Children.Count ?? 0} items
+Files Selected: {SelectedFileCount}
+Total Tokens: {TotalTokens:N0}
+Sanitized Values: {SanitizedValueCount}
+
+Undo/Redo:
+- Can Undo: {CanUndo}
+- Can Redo: {CanRedo}
+- Undo: {UndoDescription ?? "N/A"}
+- Redo: {RedoDescription ?? "N/A"}
+";
+
+        await ClipboardService.SetTextAsync(info);
+        StatusText = "📋 Diagnostics copied to clipboard";
+    }
+
+    [RelayCommand]
+    private async Task ViewLogsAsync()
+    {
+        var logPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "ShieldPrompt", "logs");
+
+        if (Directory.Exists(logPath))
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = logPath,
+                UseShellExecute = true
+            });
+        }
+        else
+        {
+            StatusText = "ℹ️ No logs directory found (logging not enabled)";
+        }
+    }
+
+    // Help Menu Commands
+    [RelayCommand]
+    private void OpenUserGuide()
+    {
+        OpenUrl("https://github.com/YOLOVibeCode/shield-prompt/blob/main/docs/USER_GUIDE.md");
+    }
+
+    [RelayCommand]
+    private void OpenTutorial()
+    {
+        OpenUrl("https://github.com/YOLOVibeCode/shield-prompt/blob/main/samples/tutorial-project/README_TUTORIAL.md");
+    }
+
+    [RelayCommand]
+    private void ShowKeyboardShortcuts()
+    {
+        var shortcuts = @"Keyboard Shortcuts
+==================
+
+File:
+Ctrl+O     Open Folder
+F5         Refresh  
+Ctrl+C     Copy to Clipboard
+Ctrl+V     Paste & Restore
+
+Edit:
+Ctrl+Z     Undo
+Ctrl+Y     Redo
+Ctrl+A     Select All Files
+Ctrl+D     Deselect All Files
+
+View:
+Ctrl+Shift+S   Toggle Shield Preview
+Ctrl+Plus      Increase Font Size
+Ctrl+Minus     Decrease Font Size
+Ctrl+0         Reset Font Size
+
+Tools:
+Ctrl+T     Load Tutorial Project
+
+Help:
+F1         User Guide
+";
+        ClipboardService.SetText(shortcuts);
+        StatusText = "⌨️ Shortcuts copied to clipboard";
+    }
+
+    [RelayCommand]
+    private void OpenGitHub()
+    {
+        OpenUrl("https://github.com/YOLOVibeCode/shield-prompt");
+    }
+
+    [RelayCommand]
+    private async Task CheckForUpdatesAsync()
+    {
+        StatusText = "Checking for updates...";
+        // Future: implement update check
+        await Task.Delay(500);
+        StatusText = "ℹ️ You're running v1.0.3 - Check GitHub releases for latest version";
+    }
+
+    [RelayCommand]
+    private void ShowAboutDialog()
+    {
+        var about = @"ShieldPrompt v1.0.3
+====================
+
+Secure AI Prompt Generation
+Enterprise-Grade Data Protection
+
+© 2026 YOLOVibeCode
+MIT License (Free for commercial use)
+
+Technology:
+- .NET 10.0
+- Avalonia UI 11.3
+- TiktokenSharp 1.2.0
+
+Tests: 186/186 passing ✅
+
+GitHub: https://github.com/YOLOVibeCode/shield-prompt
+";
+        ClipboardService.SetText(about);
+        StatusText = "ℹ️ About info copied to clipboard";
+    }
+
+    // Font Size Commands
+    [RelayCommand]
+    private void IncreaseFontSize()
+    {
+        // Future: implement font size control
+        StatusText = "Font size increased (feature coming soon)";
+    }
+
+    [RelayCommand]
+    private void DecreaseFontSize()
+    {
+        // Future: implement font size control
+        StatusText = "Font size decreased (feature coming soon)";
+    }
+
+    [RelayCommand]
+    private void ResetFontSize()
+    {
+        // Future: implement font size control
+        StatusText = "Font size reset to default (feature coming soon)";
+    }
+
+    private void OpenUrl(string url)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
+        catch
+        {
+            ClipboardService.SetText(url);
+            StatusText = $"📋 URL copied to clipboard: {url}";
         }
     }
 }

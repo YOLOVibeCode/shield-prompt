@@ -26,9 +26,110 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+        <!-- Menu Bar -->
+        <Menu Grid.Row="0">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open Folder..." 
+                          Command="{Binding OpenFolderCommand}"
+                          InputGesture="Ctrl+O"/>
+                <MenuItem Header="_Refresh" 
+                          Command="{Binding OpenFolderCommand}"
+                          InputGesture="F5"/>
+                <Separator/>
+                <MenuItem Header="_Copy to Clipboard" 
+                          Command="{Binding CopyToClipboardCommand}"
+                          InputGesture="Ctrl+C"/>
+                <MenuItem Header="_Paste &amp; Restore..." 
+                          Command="{Binding OpenPasteRestoreDialogCommand}"
+                          InputGesture="Ctrl+V"/>
+                <Separator/>
+                <MenuItem Header="E_xit" 
+                          Command="{Binding ExitCommand}"
+                          InputGesture="Alt+F4"/>
+            </MenuItem>
+            
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Undo" 
+                          Command="{Binding UndoCommand}"
+                          InputGesture="Ctrl+Z"/>
+                <MenuItem Header="_Redo" 
+                          Command="{Binding RedoCommand}"
+                          InputGesture="Ctrl+Y"/>
+                <Separator/>
+                <MenuItem Header="Select _All Files" 
+                          Command="{Binding SelectAllCommand}"/>
+                <MenuItem Header="_Deselect All Files" 
+                          Command="{Binding DeselectAllCommand}"/>
+            </MenuItem>
+            
+            <MenuItem Header="_View">
+                <MenuItem Header="Show _Shield Preview" 
+                          Command="{Binding ToggleShieldPreviewCommand}"
+                          InputGesture="Ctrl+Shift+S">
+                    <MenuItem.Icon>
+                        <TextBlock Text="{Binding ShowSanitizationPreview, Converter={StaticResource BoolToCheckConverter}}" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Show _Status Bar" 
+                          Command="{Binding ToggleStatusBarCommand}">
+                    <MenuItem.Icon>
+                        <TextBlock Text="{Binding ShowStatusBar, Converter={StaticResource BoolToCheckConverter}}" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Show _Toolbar" 
+                          Command="{Binding ToggleToolbarCommand}">
+                    <MenuItem.Icon>
+                        <TextBlock Text="{Binding ShowToolbar, Converter={StaticResource BoolToCheckConverter}}" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="_Increase Font Size" 
+                          Command="{Binding IncreaseFontSizeCommand}"
+                          InputGesture="Ctrl+Plus"/>
+                <MenuItem Header="_Decrease Font Size" 
+                          Command="{Binding DecreaseFontSizeCommand}"
+                          InputGesture="Ctrl+Minus"/>
+                <MenuItem Header="_Reset Font Size" 
+                          Command="{Binding ResetFontSizeCommand}"
+                          InputGesture="Ctrl+0"/>
+            </MenuItem>
+            
+            <MenuItem Header="_Tools">
+                <MenuItem Header="_Load Tutorial Project" 
+                          Command="{Binding LoadTutorialProjectCommand}"
+                          InputGesture="Ctrl+T"/>
+                <MenuItem Header="_Clear Session" 
+                          Command="{Binding ClearSessionCommand}"/>
+                <Separator/>
+                <MenuItem Header="_Diagnostics..." 
+                          Command="{Binding ShowDiagnosticsCommand}"/>
+                <MenuItem Header="_View Logs..." 
+                          Command="{Binding ViewLogsCommand}"/>
+            </MenuItem>
+            
+            <MenuItem Header="_Help">
+                <MenuItem Header="_User Guide" 
+                          Command="{Binding OpenUserGuideCommand}"
+                          InputGesture="F1"/>
+                <MenuItem Header="_Tutorial" 
+                          Command="{Binding OpenTutorialCommand}"/>
+                <MenuItem Header="_Keyboard Shortcuts" 
+                          Command="{Binding ShowKeyboardShortcutsCommand}"/>
+                <Separator/>
+                <MenuItem Header="_View on GitHub" 
+                          Command="{Binding OpenGitHubCommand}"/>
+                <MenuItem Header="_Check for Updates" 
+                          Command="{Binding CheckForUpdatesCommand}"/>
+                <Separator/>
+                <MenuItem Header="_About ShieldPrompt" 
+                          Command="{Binding ShowAboutDialogCommand}"/>
+            </MenuItem>
+        </Menu>
+        
         <!-- Toolbar -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="10">
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="10"
+                    IsVisible="{Binding ShowToolbar}">
             <Button Content="📁 Open Folder" 
                     Command="{Binding OpenFolderCommand}"
                     ToolTip.Tip="Open a folder to analyze (Ctrl+O)"
