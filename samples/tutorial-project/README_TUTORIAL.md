@@ -65,15 +65,16 @@ Or if you downloaded a release, just double-click the app.
 2. You should see something like:
 
 ```
-🛡️ Protected 15 sensitive values
+🛡️ Protected 34 sensitive values
 
 🗄️ ProductionDB                     → DATABASE_0
+🗄️ CustomerData                     → DATABASE_1
 🌐 192.168.1.50                    → IP_ADDRESS_0
 🌐 10.0.0.25                       → IP_ADDRESS_1
 🌐 172.16.0.100                    → IP_ADDRESS_2
 🔑 AKIAIOSFODNN7EXAMPLE            → AWS_KEY_0
-🔑 sk-proj-Tutorial...             → OPENAI_KEY_0
-🔑 sk-ant-api03-Tutorial...        → ANTHROPIC_KEY_0
+🔑 sk-proj-Tutorial...             → OPENAI_KEY_0 (detected as password)
+🔑 sk-ant-api03-Tutorial...        → ANTHROPIC_KEY_0 (detected as password)
 🔑 ghp_TutorialFake...             → GITHUB_TOKEN_0
 🆔 123-45-6789                     → SSN_0
 🆔 987-65-4321                     → SSN_1
@@ -81,8 +82,11 @@ Or if you downloaded a release, just double-click the app.
 🔐 P@ssw0rd123!                    → PASSWORD_0
 🔐 MySecretPassword123             → PASSWORD_1
 🔐 SuperSecret123                  → PASSWORD_2
+🔗 Server=ProductionDB;Database=... → CONNECTION_STRING_0
 🌐 db.internal.company.com         → HOSTNAME_0
-... and possibly more
+... and 17 more values
+
+(Total: 4 databases, 4 IPs, 10 passwords, 4 SSNs, 2 credit cards, 6 connection strings, 2 AWS keys, 2 GitHub tokens)
 ```
 
 **This preview shows you EXACTLY what will be protected before you copy!**
@@ -94,8 +98,12 @@ Or if you downloaded a release, just double-click the app.
 1. Click **"Copy"** button (or press `Ctrl+C`)
 
 **What you should see:**
-- Status bar: `"✅ Copied 3 files | 🔐 15 values masked | 487 tokens"`
+- Status bar: `"✅ Copied 3 files | 🔐 34 values masked | 2,381 tokens"`
 - Clipboard now contains SAFE content
+
+**Note:** The exact numbers may vary slightly depending on formatting, but you should see:
+- **~2,300-2,400 tokens** (substantial content)
+- **~30-35 sensitive values masked** (comprehensive protection)
 
 ---
 
