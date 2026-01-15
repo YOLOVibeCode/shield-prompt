@@ -37,6 +37,8 @@ public class MainWindowViewModelCounterTests
         var desanitizer = new DesanitizationEngine();
         var settings = new SettingsRepository();
         var undoRedo = new ShieldPrompt.Application.Services.UndoRedoManager();
+        var aiParser = new ShieldPrompt.Application.Services.AIResponseParser();
+        var fileWriter = new ShieldPrompt.Application.Services.FileWriterService();
 
         _vm = new MainWindowViewModel(
             fileService,
@@ -45,7 +47,9 @@ public class MainWindowViewModelCounterTests
             desanitizer,
             session,
             settings,
-            undoRedo);
+            undoRedo,
+            aiParser,
+            fileWriter);
 
         // Get tutorial path for testing
         var baseDir = AppDomain.CurrentDomain.BaseDirectory;

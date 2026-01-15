@@ -1,5 +1,6 @@
 using FluentAssertions;
 using ShieldPrompt.App.ViewModels;
+using ShieldPrompt.Domain.Entities;
 using ShieldPrompt.Domain.Records;
 using ShieldPrompt.Sanitization.Interfaces;
 using ShieldPrompt.Sanitization.Patterns;
@@ -40,7 +41,9 @@ public class PasteRestoreWorkflowTests
     public void PasteRestore_EmptyContent_ShouldHandleGracefully()
     {
         // Arrange
-        var vm = new PasteRestoreViewModel(_desanitizer, _session);
+        var parser = new ShieldPrompt.Application.Services.AIResponseParser();
+        var writer = new ShieldPrompt.Application.Services.FileWriterService();
+        var vm = new PasteRestoreViewModel(_desanitizer, _session, parser, writer, Array.Empty<FileNode>(), "/test");
         
         // Act
         vm.PastedContent = "";
@@ -55,7 +58,9 @@ public class PasteRestoreWorkflowTests
     public void PasteRestore_ContentWithNoAliases_ShouldReturnUnchanged()
     {
         // Arrange
-        var vm = new PasteRestoreViewModel(_desanitizer, _session);
+        var parser = new ShieldPrompt.Application.Services.AIResponseParser();
+        var writer = new ShieldPrompt.Application.Services.FileWriterService();
+        var vm = new PasteRestoreViewModel(_desanitizer, _session, parser, writer, Array.Empty<FileNode>(), "/test");
         var content = "This is plain code with no aliases";
         
         // Act
@@ -94,7 +99,9 @@ var key = ""AKIAIOSFODNN7EXAMPLE"";
         _output.WriteLine(aiResponse);
         
         // Step 2: User pastes AI response into ShieldPrompt
-        var vm = new PasteRestoreViewModel(_desanitizer, _session);
+        var parser = new ShieldPrompt.Application.Services.AIResponseParser();
+        var writer = new ShieldPrompt.Application.Services.FileWriterService();
+        var vm = new PasteRestoreViewModel(_desanitizer, _session, parser, writer, Array.Empty<FileNode>(), "/test");
         vm.PastedContent = aiResponse;
         
         // Assert - Aliases detected
@@ -124,7 +131,9 @@ Query ProductionDB
         var sanitized = _sanitizer.Sanitize(originalCode, new SanitizationOptions());
         
         // Act - Paste the sanitized content
-        var vm = new PasteRestoreViewModel(_desanitizer, _session);
+        var parser = new ShieldPrompt.Application.Services.AIResponseParser();
+        var writer = new ShieldPrompt.Application.Services.FileWriterService();
+        var vm = new PasteRestoreViewModel(_desanitizer, _session, parser, writer, Array.Empty<FileNode>(), "/test");
         vm.PastedContent = sanitized.SanitizedContent;
         
         // Assert - Should detect DATABASE alias occurred 3 times
@@ -148,7 +157,9 @@ Password: MySecret123
         var sanitized = _sanitizer.Sanitize(originalCode, new SanitizationOptions());
         
         // Act
-        var vm = new PasteRestoreViewModel(_desanitizer, _session);
+        var parser = new ShieldPrompt.Application.Services.AIResponseParser();
+        var writer = new ShieldPrompt.Application.Services.FileWriterService();
+        var vm = new PasteRestoreViewModel(_desanitizer, _session, parser, writer, Array.Empty<FileNode>(), "/test");
         vm.PastedContent = sanitized.SanitizedContent;
         
         // Assert
@@ -206,7 +217,9 @@ This approach:
 ";
         
         // Step 3: User pastes ChatGPT response
-        var vm = new PasteRestoreViewModel(_desanitizer, _session);
+        var parser = new ShieldPrompt.Application.Services.AIResponseParser();
+        var writer = new ShieldPrompt.Application.Services.FileWriterService();
+        var vm = new PasteRestoreViewModel(_desanitizer, _session, parser, writer, Array.Empty<FileNode>(), "/test");
         vm.PastedContent = chatGptResponse;
         
         // Assert - Aliases detected in ChatGPT's response
@@ -238,7 +251,9 @@ This approach:
         var originalCode = "DB: ProductionDB";
         var sanitized = _sanitizer.Sanitize(originalCode, new SanitizationOptions());
         
-        var vm = new PasteRestoreViewModel(_desanitizer, _session);
+        var parser = new ShieldPrompt.Application.Services.AIResponseParser();
+        var writer = new ShieldPrompt.Application.Services.FileWriterService();
+        var vm = new PasteRestoreViewModel(_desanitizer, _session, parser, writer, Array.Empty<FileNode>(), "/test");
         vm.PastedContent = sanitized.SanitizedContent;
         
         // Act
@@ -255,7 +270,9 @@ This approach:
         // Arrange
         var contentWithFakeAlias = "Connect to DATABASE_99 and IP_ADDRESS_999";
         
-        var vm = new PasteRestoreViewModel(_desanitizer, _session);
+        var parser = new ShieldPrompt.Application.Services.AIResponseParser();
+        var writer = new ShieldPrompt.Application.Services.FileWriterService();
+        var vm = new PasteRestoreViewModel(_desanitizer, _session, parser, writer, Array.Empty<FileNode>(), "/test");
         
         // Act
         vm.PastedContent = contentWithFakeAlias;
@@ -273,7 +290,9 @@ This approach:
         var originalCode = "DB: ProductionDB, IP: 192.168.1.50";
         var sanitized = _sanitizer.Sanitize(originalCode, new SanitizationOptions());
         
-        var vm = new PasteRestoreViewModel(_desanitizer, _session);
+        var parser = new ShieldPrompt.Application.Services.AIResponseParser();
+        var writer = new ShieldPrompt.Application.Services.FileWriterService();
+        var vm = new PasteRestoreViewModel(_desanitizer, _session, parser, writer, Array.Empty<FileNode>(), "/test");
         
         // Act
         vm.PastedContent = sanitized.SanitizedContent;

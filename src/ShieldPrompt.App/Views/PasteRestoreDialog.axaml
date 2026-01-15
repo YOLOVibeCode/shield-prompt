@@ -7,7 +7,7 @@
         Width="900" Height="600"
         WindowStartupLocation="CenterOwner">
 
-    <Grid RowDefinitions="Auto,*,Auto,*,Auto" Margin="15">
+    <Grid RowDefinitions="Auto,*,Auto,Auto,*,Auto" Margin="15">
         
         <!-- Title -->
         <TextBlock Grid.Row="0" 
@@ -100,8 +100,47 @@
             </StackPanel>
         </Border>
 
-        <!-- Restored Preview -->
+        <!-- File Updates Preview -->
         <Border Grid.Row="3"
+                BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="10"
+                Margin="0,15,0,0"
+                IsVisible="{Binding !!FileUpdates.Count}">
+            <StackPanel>
+                <TextBlock Text="📁 Files that will be updated:"
+                           FontWeight="Bold"
+                           Margin="0,0,0,10"/>
+                <ScrollViewer MaxHeight="120">
+                    <ItemsControl ItemsSource="{Binding FileUpdates}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="8,4" Margin="0,2"
+                                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                                        CornerRadius="3">
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding Type}"
+                                                   FontWeight="Bold"
+                                                   Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding FilePath}"/>
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{Binding LinesChanged, StringFormat='({0} lines)'}"
+                                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                                   FontSize="11"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </StackPanel>
+        </Border>
+
+        <!-- Restored Preview -->
+        <Border Grid.Row="4"
                 BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
                 BorderThickness="1"
                 CornerRadius="4"
@@ -126,7 +165,7 @@
         </Border>
 
         <!-- Buttons -->
-        <StackPanel Grid.Row="4" 
+        <StackPanel Grid.Row="5" 
                     Orientation="Horizontal" 
                     HorizontalAlignment="Right"
                     Spacing="10"
@@ -134,6 +173,11 @@
             <Button Content="Cancel" 
                     Click="OnCancelClick"
                     Padding="20,8"/>
+            <Button Content="{Binding ApplyButtonText}"
+                    Command="{Binding ApplyToFilesCommand}"
+                    IsVisible="{Binding CanApplyToFiles}"
+                    Padding="20,10"
+                    ToolTip.Tip="Automatically update files with restored values"/>
             <Button Content="📋 Copy Restored to Clipboard" 
                     Command="{Binding CopyRestoredCommand}"
                     Padding="20,8"/>

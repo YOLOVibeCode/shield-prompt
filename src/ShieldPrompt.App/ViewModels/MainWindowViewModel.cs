@@ -28,6 +28,8 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly IMappingSession _session;
     private readonly ISettingsRepository _settingsRepository;
     private readonly IUndoRedoManager _undoRedoManager;
+    private readonly IAIResponseParser _aiParser;
+    private readonly IFileWriterService _fileWriter;
 
     [ObservableProperty]
     private FileNode? _rootNode;
@@ -89,7 +91,9 @@ public partial class MainWindowViewModel : ViewModelBase
         IDesanitizationEngine desanitizationEngine,
         IMappingSession session,
         ISettingsRepository settingsRepository,
-        IUndoRedoManager undoRedoManager)
+        IUndoRedoManager undoRedoManager,
+        IAIResponseParser aiParser,
+        IFileWriterService fileWriter)
     {
         _fileAggregationService = fileAggregationService;
         _tokenCountingService = tokenCountingService;
@@ -98,6 +102,8 @@ public partial class MainWindowViewModel : ViewModelBase
         _session = session;
         _settingsRepository = settingsRepository;
         _undoRedoManager = undoRedoManager;
+        _aiParser = aiParser;
+        _fileWriter = fileWriter;
 
         // Subscribe to undo/redo state changes
         _undoRedoManager.StateChanged += OnUndoRedoStateChanged;
@@ -436,9 +442,22 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         try
         {
+            // Get selected files for context
+            var selectedFiles = RootNodeViewModel != null 
+                ? GetSelectedFilesFromViewModel(RootNodeViewModel).ToList()
+                : new List<FileNode>();
+            
+            var baseDir = RootNode?.Path ?? Environment.CurrentDirectory;
+            
             var dialog = new ShieldPrompt.App.Views.PasteRestoreDialog
             {
-                DataContext = new PasteRestoreViewModel(_desanitizationEngine, _session)
+                DataContext = new PasteRestoreViewModel(
+                    _desanitizationEngine, 
+                    _session,
+                    _aiParser,
+                    _fileWriter,
+                    selectedFiles,
+                    baseDir)
             };
 
             if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
