@@ -1,0 +1,16 @@
+# Tutorial Project Metadata
+
+This folder contains educational sample files with FAKE credentials
+for learning how to use ShieldPrompt.
+
+All values are intentionally obvious fakes:
+- Database names: "ProductionDB" (generic placeholder)
+- IP addresses: 192.168.x.x, 10.x.x.x (private ranges, non-routable)
+- API keys: Clearly marked with "Tutorial", "Fake", "Example"
+- SSNs: 123-45-6789 (Woolworth's test number, widely published)
+- Credit cards: 4111-1111-1111-1111 (Visa test card)
+
+Purpose: Safe learning environment for ShieldPrompt features.
+
+DO NOT use these values in production code!
+

@@ -1,0 +1,161 @@
+🎓 TUTORIAL REFERENCE: What ChatGPT Should Receive
+====================================================
+
+When you copy the tutorial files with ShieldPrompt, ChatGPT will receive
+content that looks like this (with all sensitive values replaced):
+
+---
+
+FILE: src/Program.cs
+--------------------
+// 🎓 TUTORIAL FILE - Contains FAKE secrets for learning ShieldPrompt
+// These are NOT real credentials - they're educational examples!
+
+using System;
+
+namespace TutorialApp
+{
+    public class Program
+    {
+        // ⚠️ FAKE DATABASE NAME (will be detected and masked as DATABASE_0)
+        private const string DatabaseName = "DATABASE_0";
+        
+        // ⚠️ FAKE IP ADDRESS (will be detected and masked as IP_ADDRESS_0)
+        private const string ServerIp = "IP_ADDRESS_0";
+        
+        // ⚠️ FAKE AWS KEY (will be detected and masked as AWS_KEY_0)
+        private const string AwsAccessKey = "AWS_KEY_0";
+        
+        // ⚠️ FAKE SSN (will be detected and masked as SSN_0)
+        private const string AdminSsn = "SSN_0";
+        
+        // ⚠️ FAKE PASSWORD (will be detected and masked as PASSWORD_0)
+        private const string ApiPassword = "PASSWORD_0";
+        
+        public static void Main(string[] args)
+        {
+            Console.WriteLine("🎓 ShieldPrompt Tutorial Application");
+            Console.WriteLine("=====================================");
+            Console.WriteLine();
+            Console.WriteLine($"Database: {DatabaseName}");
+            Console.WriteLine($"Server IP: {ServerIp}");
+            Console.WriteLine($"AWS Key: {AwsAccessKey}");
+            Console.WriteLine($"Admin SSN: {AdminSsn}");
+            Console.WriteLine($"API Password: {ApiPassword}");
+            // ... etc
+        }
+    }
+}
+
+---
+
+FILE: src/DatabaseService.cs
+-----------------------------
+// 🎓 TUTORIAL FILE - Database connection with FAKE credentials
+
+using System;
+
+namespace TutorialApp
+{
+    public class DatabaseService
+    {
+        // ⚠️ FAKE CONNECTION STRING (will be detected and masked)
+        private readonly string _connectionString = 
+            "Server=DATABASE_0;Database=DATABASE_1;User=admin;Password=PASSWORD_1";
+        
+        // ⚠️ FAKE INTERNAL HOSTNAME (will be detected and masked as HOSTNAME_0)
+        private readonly string _backupServer = "HOSTNAME_0";
+        
+        // ⚠️ FAKE PRIVATE IP (will be detected and masked as IP_ADDRESS_1)
+        private readonly string _cacheServer = "IP_ADDRESS_1";
+        
+        public void Connect()
+        {
+            Console.WriteLine($"Connecting to: {_connectionString}");
+            Console.WriteLine($"Backup server: {_backupServer}");
+            Console.WriteLine($"Cache server: {_cacheServer}");
+        }
+        
+        public string GetCustomerData(string customerId)
+        {
+            // ⚠️ FAKE CREDIT CARD (will be detected and masked as CREDIT_CARD_0)
+            var testCard = "CREDIT_CARD_0";
+            
+            // ⚠️ FAKE SSN (will be detected and masked as SSN_1)
+            var testSsn = "SSN_1";
+            
+            return $"Customer: {customerId}, Card: {testCard}, SSN: {testSsn}";
+        }
+    }
+}
+
+---
+
+FILE: config/appsettings.json
+------------------------------
+{
+  "// TUTORIAL NOTE": "These are FAKE credentials for learning ShieldPrompt!",
+  
+  "Database": {
+    "Server": "DATABASE_0",
+    "Host": "IP_ADDRESS_0",
+    "Port": 5432,
+    "Username": "admin",
+    "Password": "PASSWORD_0",
+    "ConnectionString": "Server=DATABASE_0;Port=5432;User=admin;Password=PASSWORD_0"
+  },
+  
+  "Api": {
+    "OpenAI": {
+      "ApiKey": "OPENAI_KEY_0",
+      "BaseUrl": "https://api.openai.com"
+    },
+    "Anthropic": {
+      "ApiKey": "ANTHROPIC_KEY_0",
+      "BaseUrl": "https://api.anthropic.com"
+    },
+    "GitHub": {
+      "Token": "GITHUB_TOKEN_0",
+      "Organization": "my-company"
+    }
+  },
+  
+  "Infrastructure": {
+    "InternalHosts": [
+      "HOSTNAME_0",
+      "HOSTNAME_1",
+      "HOSTNAME_2"
+    ],
+    "PrivateIPs": [
+      "IP_ADDRESS_0",
+      "IP_ADDRESS_1",
+      "IP_ADDRESS_2"
+    ]
+  },
+  
+  "TestData": {
+    "SampleSSN": "SSN_0",
+    "SampleCreditCard": "CREDIT_CARD_0",
+    "SampleCustomerId": "CUST-987654"
+  }
+}
+
+---
+
+✅ NOTICE: All sensitive values have been replaced with safe aliases!
+
+- ProductionDB → DATABASE_0
+- 192.168.1.50 → IP_ADDRESS_0  
+- API keys → OPENAI_KEY_0, AWS_KEY_0, etc.
+- SSNs → SSN_0, SSN_1
+- Passwords → PASSWORD_0, PASSWORD_1, PASSWORD_2
+
+**This is what you can safely paste in ChatGPT!**
+
+ChatGPT can still understand the code structure and provide helpful suggestions
+because the aliases are meaningful (DATABASE_0 is clearly a database).
+
+---
+
+📝 Next: Copy this content and paste it in ChatGPT to ask for help!
+

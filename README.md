@@ -116,6 +116,15 @@ dotnet run --project src/ShieldPrompt.App
 
 **That's it!** ShieldPrompt handles all the protection automatically.
 
+### 🎓 New User? Try the Tutorial!
+
+**Learn by doing:** Load `samples/tutorial-project/` and follow the [interactive tutorial](samples/tutorial-project/README_TUTORIAL.md)
+
+- ✅ Hands-on walkthrough (5 minutes)
+- ✅ Sample files with fake secrets (safe to practice)
+- ✅ See exactly what gets protected
+- ✅ Learn the complete workflow
+
 ---
 
 ---
@@ -161,11 +170,11 @@ var apiKey = Configuration["AKIAIOSFODNN7EXAMPLE"];
 
 ## 📚 Documentation
 
+- **[User Guide](docs/USER_GUIDE.md)** ⭐ - Complete usage guide with screenshots
+- **[Interactive Tutorial](samples/tutorial-project/README_TUTORIAL.md)** ⭐ - Learn by doing (5 min)
 - **[Documentation Index](docs/INDEX.md)** - Complete documentation index
 - **[Use Cases](docs/USE_CASES.md)** - Enterprise scenarios & examples  
 - **[Technical Specification](docs/SPECIFICATION.md)** - Full architecture & implementation
-- **[Executive Summary](docs/EXECUTIVE_SUMMARY.md)** - Business case & value proposition
-- **[Release Guide](docs/RELEASE_GUIDE.md)** - How to create releases
 
 ---
 
