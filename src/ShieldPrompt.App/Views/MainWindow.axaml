@@ -73,14 +73,11 @@
                           Command="{Binding ToggleToolbarCommand}"/>
                 <Separator/>
                 <MenuItem Header="_Increase Font Size" 
-                          Command="{Binding IncreaseFontSizeCommand}"
-                          InputGesture="Ctrl+Plus"/>
+                          Command="{Binding IncreaseFontSizeCommand}"/>
                 <MenuItem Header="_Decrease Font Size" 
-                          Command="{Binding DecreaseFontSizeCommand}"
-                          InputGesture="Ctrl+Minus"/>
+                          Command="{Binding DecreaseFontSizeCommand}"/>
                 <MenuItem Header="_Reset Font Size" 
-                          Command="{Binding ResetFontSizeCommand}"
-                          InputGesture="Ctrl+0"/>
+                          Command="{Binding ResetFontSizeCommand}"/>
             </MenuItem>
             
             <MenuItem Header="_Tools">

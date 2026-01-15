@@ -69,6 +69,10 @@ public partial class App : AvaloniaApplication
             registry.AddPattern(pattern);
         }
         services.AddSingleton<ShieldPrompt.Sanitization.Interfaces.IPatternRegistry>(registry);
+        
+        // File manipulation services
+        services.AddSingleton<Application.Interfaces.IAIResponseParser, Application.Services.AIResponseParser>();
+        services.AddSingleton<Application.Interfaces.IFileWriterService, Application.Services.FileWriterService>();
 
         // ViewModels
         services.AddSingleton<MainWindowViewModel>();

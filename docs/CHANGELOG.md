@@ -15,6 +15,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Chocolatey package
 - Audit logging to SQLite
 
+## [1.1.2] - 2026-01-15
+
+### Fixed
+- **Critical: Missing DI Service Registrations** - App now launches correctly
+  - Added IAIResponseParser registration
+  - Added IFileWriterService registration
+  - MainWindowViewModel can now be created via DI
+  - **Result:** UI launches successfully on all platforms ✅
+  
+- **Invalid Keyboard Gestures** - Fixed KeyGesture parsing errors
+  - Removed `Ctrl+Plus` (not recognized by Avalonia)
+  - Removed `Ctrl+Minus` (not recognized by Avalonia)
+  - Removed `Ctrl+0` (not recognized by Avalonia)
+  - Font size menu items still work (no shortcuts for now)
+
+### Verified
+- ✅ UI launches without errors
+- ✅ Window appears correctly
+- ✅ Menu bar functional
+- ✅ All 271 tests passing (268 in CI)
+- ✅ No runtime exceptions
+- ✅ Clean application startup
+
 ## [1.1.1] - 2026-01-15
 
 ### Fixed
