@@ -2,6 +2,66 @@
 
 > **Secure Copy/Paste for ChatGPT/Claude with Automatic Data Protection**
 
+<!-- AUTO-INDEX-SECTION -->
+<!--
+🤖 AI ASSISTANT - PROJECT NAVIGATION GUIDE
+============================================
+
+To fully understand and work with this project, follow this systematic approach:
+
+📚 STEP 1 - READ DOCUMENTATION: docs/INDEX.md
+   This is your PRIMARY source for understanding the project:
+   • Complete index of ALL project documentation
+   • Organized by category (specifications, guides, architecture, etc.)
+   • Read specifications FIRST to understand system design
+   • Then read guides for implementation details
+   • Every document is indexed with descriptions and word counts
+   • This is the authoritative source - do not search randomly
+
+🔧 STEP 2 - UNDERSTAND AVAILABLE SCRIPTS: scripts/INDEX.md
+   This index shows you ALL tools and automation:
+   • Categorized by purpose (setup, build, test, deploy, etc.)
+   • Includes usage examples and requirements
+   • Marked with executable status and required arguments
+   • Shows which language each script uses
+
+   ⚡ SCRIPT EXECUTION ORDER:
+   1. Setup scripts - Run FIRST for project initialization
+   2. Build scripts - Compile/build the project
+   3. Test scripts - Verify functionality
+   4. Deploy scripts - Deploy to environments
+
+🎯 COMPLETE WORKFLOW:
+   1. Read docs/INDEX.md to understand WHAT the project does
+   2. Read scripts/INDEX.md to understand HOW to work with it
+   3. Follow specifications → guides → implementation order
+   4. Use scripts in order: setup → build → test → deploy
+
+💡 KEY PRINCIPLES:
+   • Both indexes are auto-generated and always up-to-date
+   • Never search randomly - use the indexes as navigation
+   • Read documentation before writing code
+   • Check scripts before running manual commands
+   • Word counts help prioritize what to read first
+
+✅ AFTER READING BOTH INDEXES:
+   You will have complete knowledge of:
+   • System architecture and design decisions
+   • Implementation details and best practices
+   • All available automation and tooling
+   • Proper setup, build, test, and deployment procedures
+
+============================================
+-->
+
+## 📚 Documentation & Scripts
+
+**Quick Links:**
+- 📖 **[Documentation Index](docs/INDEX.md)** - Complete project documentation
+- 🔧 **[Scripts Index](scripts/INDEX.md)** - All available scripts and tools
+
+<!-- AUTO-INDEX-SECTION -->
+
 ## The Problem
 
 Developers need AI help but can't use agentic tools (Copilot, Cursor) due to security policies. When they copy code to ChatGPT manually, they accidentally leak:
@@ -101,11 +161,11 @@ var apiKey = Configuration["AKIAIOSFODNN7EXAMPLE"];
 
 ## 📚 Documentation
 
-- **[Security Patterns](docs/SECURITY_PATTERNS.md)** - All 14 detection patterns explained
-- **[Use Cases](docs/USE_CASES.md)** - Enterprise scenarios & examples
-- **[User Guide](docs/USER_GUIDE.md)** - Complete usage instructions
-- **[Technical Spec](SPECIFICATION.md)** - Full architecture & implementation
-- **[Why ShieldPrompt?](docs/WHY_SHIELDPROMPT.md)** - Enterprise vs. Agentic AI comparison
+- **[Documentation Index](docs/INDEX.md)** - Complete documentation index
+- **[Use Cases](docs/USE_CASES.md)** - Enterprise scenarios & examples  
+- **[Technical Specification](docs/SPECIFICATION.md)** - Full architecture & implementation
+- **[Executive Summary](docs/EXECUTIVE_SUMMARY.md)** - Business case & value proposition
+- **[Release Guide](docs/RELEASE_GUIDE.md)** - How to create releases
 
 ---
 
@@ -136,7 +196,7 @@ var apiKey = Configuration["AKIAIOSFODNN7EXAMPLE"];
 
 ## 🤝 Contributing
 
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions welcome! See [docs/INDEX.md](docs/INDEX.md) for project structure and guidelines.
 
 ---
 
