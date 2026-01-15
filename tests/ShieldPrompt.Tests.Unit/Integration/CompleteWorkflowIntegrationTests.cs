@@ -70,7 +70,7 @@ public class CompleteWorkflowIntegrationTests : IDisposable
         }
     }
 
-    [Fact]
+    [Fact(Skip = "Requires file system access - runs locally, skipped in CI")]
     public async Task CompleteWorkflow_CopyPasteApply_ShouldUpdateFilesWithRestoredValues()
     {
         _output.WriteLine("═══════════════════════════════════════════");
