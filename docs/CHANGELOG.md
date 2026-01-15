@@ -15,6 +15,136 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Chocolatey package
 - Audit logging to SQLite
 
+## [1.1.0] - 2026-01-14
+
+### Added
+
+#### **🎉 MAJOR: Auto File Updates from AI** (THE KILLER FEATURE!)
+The complete automation loop is now closed! No more manual file editing!
+
+- **AI Response Parser** - Extracts file operations from ChatGPT/Claude responses
+  - Supports ChatGPT markdown format (`**Program.cs**`)
+  - Supports Claude format (`` `Program.cs` ``)
+  - Supports comment format (`// File: Program.cs`)
+  - Auto-maps to original files when no markers present
+  - Detects new file creation vs updates
+  
+- **File Writer Service** - Safely applies file changes
+  - Creates new files with content
+  - Updates existing files
+  - Creates nested directories automatically
+  - Deletes files (with explicit permission)
+  - Automatic backups before ANY modification
+  - Complete backup/restore capability
+  - Path validation (security)
+  - Atomic operations where possible
+  
+- **"Apply to Files" Button** in Paste & Restore dialog
+  - One-click file updates
+  - Shows preview of files that will be modified
+  - Displays file type (Create/Update/Delete)
+  - Shows estimated lines changed
+  - Progress indicators
+  - Success/error messages
+  - Integrates with undo/redo
+
+#### **Live Counters**
+- **SelectedFileCount** now updates instantly when files checked/unchecked
+- **TotalTokens** shows estimated count in real-time
+- No more waiting for copy to see numbers!
+- Event-driven updates (efficient)
+
+#### **Professional Menu Bar**
+- **File Menu:** Open, Refresh, Copy, Paste & Restore, Exit
+- **Edit Menu:** Undo, Redo, Select All, Deselect All
+- **View Menu:** Toggle Shield/Toolbar/Status Bar, Font Size controls
+- **Tools Menu:** Load Tutorial (Ctrl+T), Clear Session, Diagnostics, View Logs
+- **Help Menu:** User Guide (F1), Tutorial, Shortcuts, GitHub, Updates, About
+- All keyboard shortcuts work from menu
+
+#### **Tutorial Project**
+- Added `samples/tutorial-project/` with realistic sample code
+- 3 C# files + 1 JSON config with 34 fake secrets
+- Step-by-step walkthrough guide
+- Expected outputs for verification
+- Verified metrics: 2,381 tokens, 34 secrets detected
+- One-click load via Tools → Load Tutorial (Ctrl+T)
+
+#### **User Guide**
+- Complete usage documentation (`docs/USER_GUIDE.md`)
+- Installation instructions (Windows/Mac/Linux)
+- Quick start guide
+- Workflow explanations
+- Keyboard shortcuts reference
+- Troubleshooting section
+- Ready for screenshots (structure in place)
+
+#### **Undo Confirmation for File Changes**
+- Ctrl+Z after "Apply to Files" shows confirmation
+- Warning message: "⚠️ This will undo AI file changes: X files modified"
+- User can confirm or cancel
+- Prevents accidental restoration
+- Restores from automatic backup on confirm
+
+### Improved
+
+#### **Enhanced Paste & Restore Dialog**
+- Now shows file update preview list
+- Displays which files will be modified
+- Shows operation type (Create/Update/Delete)
+- Shows estimated lines changed
+- Dynamic button text: "Apply to X File(s)"
+
+#### **Better Status Messages**
+- Real-time file count
+- Live token estimates
+- Sanitization counts
+- Clear progress indicators
+- Detailed diagnostics
+
+### Technical
+
+#### **New Interfaces (ISP-Compliant):**
+- `IAIResponseParser` (1 method) - Parse AI responses
+- `IFileWriterService` (4 methods) - File operations
+- `IUndoableAction` enhanced with `RequiresConfirmation` and `ConfirmationMessage`
+- `IUndoRedoManager` enhanced with `PeekUndo()`
+
+#### **New Services:**
+- `AIResponseParser` - Smart response parsing
+- `FileWriterService` - Safe file operations
+- `FileUpdateAction` - Undoable file changes
+
+#### **Test Suite Growth:**
+- **Total: 268 tests** (was 180)
+- Added 88 new tests (+48%)
+- All TDD (tests first)
+- All passing ✅
+
+#### **Test Breakdown:**
+- AI Response Parser: 10 tests
+- File Writer Service: 12 tests
+- File System Manipulation: 27 tests
+- File Update Action: 6 tests
+- Live Counter Tests: 18 tests
+- Paste/Restore Workflow: 9 tests
+- Tutorial Integration: 6 tests
+
+### Security
+
+- Path validation prevents directory traversal attacks
+- Automatic backups prevent data loss
+- Undo confirmation for important operations
+- Fail-fast validation (all-or-nothing)
+- Backup manifests for audit trail
+
+### Performance
+
+- Event-driven counter updates (no polling)
+- Efficient recursive algorithms
+- Background token counting
+- Cached tokenizers
+
 ## [1.0.3] - 2026-01-14
 
 ### Fixed

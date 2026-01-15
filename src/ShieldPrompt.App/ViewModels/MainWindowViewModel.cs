@@ -802,13 +802,13 @@ F1         User Guide
         StatusText = "Checking for updates...";
         // Future: implement update check
         await Task.Delay(500);
-        StatusText = "ℹ️ You're running v1.0.3 - Check GitHub releases for latest version";
+        StatusText = "ℹ️ You're running v1.1.0 - Check GitHub releases for latest version";
     }
 
     [RelayCommand]
     private void ShowAboutDialog()
     {
-        var about = @"ShieldPrompt v1.0.3
+        var about = @"ShieldPrompt v1.1.0
 ====================
 
 Secure AI Prompt Generation
