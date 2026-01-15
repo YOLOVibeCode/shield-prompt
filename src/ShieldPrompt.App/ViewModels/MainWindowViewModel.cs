@@ -101,6 +101,9 @@ public partial class MainWindowViewModel : ViewModelBase
 
         // Subscribe to undo/redo state changes
         _undoRedoManager.StateChanged += OnUndoRedoStateChanged;
+        
+        // Subscribe to property changes for live counter updates
+        PropertyChanged += OnViewModelPropertyChanged;
 
         // Initialize formatters
         AvailableFormatters = new ObservableCollection<IPromptFormatter>
@@ -293,6 +296,77 @@ public partial class MainWindowViewModel : ViewModelBase
         // Notify commands to update their CanExecute state
         UndoCommand.NotifyCanExecuteChanged();
         RedoCommand.NotifyCanExecuteChanged();
+    }
+    
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(RootNodeViewModel) && RootNodeViewModel != null)
+        {
+            // Subscribe to all file node selection changes for live counter updates
+            SubscribeToFileSelectionChanges(RootNodeViewModel);
+            UpdateSelectedFileCount();
+            UpdateEstimatedTokenCount();
+        }
+    }
+    
+    private void SubscribeToFileSelectionChanges(FileNodeViewModel node)
+    {
+        node.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(FileNodeViewModel.IsSelected))
+            {
+                UpdateSelectedFileCount();
+                UpdateEstimatedTokenCount();
+            }
+        };
+        
+        foreach (var child in node.Children)
+        {
+            SubscribeToFileSelectionChanges(child);
+        }
+    }
+    
+    private void UpdateSelectedFileCount()
+    {
+        if (RootNodeViewModel == null)
+        {
+            SelectedFileCount = 0;
+            return;
+        }
+        
+        SelectedFileCount = CountSelectedFiles(RootNodeViewModel);
+    }
+    
+    private int CountSelectedFiles(FileNodeViewModel node)
+    {
+        var count = (!node.IsDirectory && node.IsSelected) ? 1 : 0;
+        foreach (var child in node.Children)
+        {
+            count += CountSelectedFiles(child);
+        }
+        return count;
+    }
+    
+    private void UpdateEstimatedTokenCount()
+    {
+        if (RootNodeViewModel == null)
+        {
+            TotalTokens = 0;
+            return;
+        }
+        
+        // Sum per-file token counts for selected files (live estimate)
+        TotalTokens = SumSelectedTokens(RootNodeViewModel);
+    }
+    
+    private int SumSelectedTokens(FileNodeViewModel node)
+    {
+        var sum = (!node.IsDirectory && node.IsSelected) ? node.TokenCount : 0;
+        foreach (var child in node.Children)
+        {
+            sum += SumSelectedTokens(child);
+        }
+        return sum;
     }
 
     public ObservableCollection<ModelProfile> AvailableModels { get; } = 

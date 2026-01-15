@@ -24,6 +24,8 @@
     <ProjectReference Include="..\..\src\ShieldPrompt.Application\ShieldPrompt.Application.csproj" />
     <ProjectReference Include="..\..\src\ShieldPrompt.Sanitization\ShieldPrompt.Sanitization.csproj" />
     <ProjectReference Include="..\..\src\ShieldPrompt.Infrastructure\ShieldPrompt.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\ShieldPrompt.App\ShieldPrompt.App.csproj" />
+    <ProjectReference Include="..\..\src\ShieldPrompt.Presentation\ShieldPrompt.Presentation.csproj" />
   </ItemGroup>
 
 </Project>
