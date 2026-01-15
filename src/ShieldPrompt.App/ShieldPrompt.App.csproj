@@ -11,10 +11,10 @@
     <RootNamespace>ShieldPrompt.App</RootNamespace>
     
     <!-- Version Information -->
-    <Version>1.1.0</Version>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
-    <FileVersion>1.1.0.0</FileVersion>
-    <InformationalVersion>1.1.0</InformationalVersion>
+    <Version>1.1.1</Version>
+    <AssemblyVersion>1.1.1.0</AssemblyVersion>
+    <FileVersion>1.1.1.0</FileVersion>
+    <InformationalVersion>1.1.1</InformationalVersion>
     
     <!-- Product Information -->
     <Product>ShieldPrompt</Product>

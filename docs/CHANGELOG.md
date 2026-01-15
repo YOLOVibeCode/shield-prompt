@@ -15,6 +15,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Chocolatey package
 - Audit logging to SQLite
 
+## [1.1.1] - 2026-01-15
+
+### Fixed
+- **XAML Grid.Row Overlap** - Fixed UI layout conflict
+  - Main content and toolbar were both at Grid.Row="1"
+  - Corrected row indices to match RowDefinitions
+- **Missing BoolToCheckConverter** - Removed undefined converter references
+  - Menu items no longer reference non-existent converter
+  - Simplified menu item display
+
+### Verified
+- ✅ UI launches successfully without errors
+- ✅ App process runs correctly
+- ✅ No XAML parsing errors
+- ✅ Menu bar functional
+- ✅ All 271 tests passing locally
+- ✅ 268 tests passing in CI (3 environment-specific skipped)
+
 ## [1.1.0] - 2026-01-14
 
 ### Added
