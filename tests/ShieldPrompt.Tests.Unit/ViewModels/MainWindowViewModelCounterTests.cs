@@ -39,6 +39,8 @@ public class MainWindowViewModelCounterTests
         var undoRedo = new ShieldPrompt.Application.Services.UndoRedoManager();
         var aiParser = new ShieldPrompt.Application.Services.AIResponseParser();
         var fileWriter = new ShieldPrompt.Application.Services.FileWriterService();
+        var templateRepo = new ShieldPrompt.Infrastructure.Services.YamlPromptTemplateRepository();
+        var promptComposer = new ShieldPrompt.Application.Services.PromptComposer(tokenService);
 
         _vm = new MainWindowViewModel(
             fileService,
@@ -49,7 +51,9 @@ public class MainWindowViewModelCounterTests
             settings,
             undoRedo,
             aiParser,
-            fileWriter);
+            fileWriter,
+            templateRepo,
+            promptComposer);
 
         // Get tutorial path for testing
         var baseDir = AppDomain.CurrentDomain.BaseDirectory;

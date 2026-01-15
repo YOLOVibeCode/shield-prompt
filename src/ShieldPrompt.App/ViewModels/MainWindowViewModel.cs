@@ -30,6 +30,8 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly IUndoRedoManager _undoRedoManager;
     private readonly IAIResponseParser _aiParser;
     private readonly IFileWriterService _fileWriter;
+    private readonly IPromptTemplateRepository _templateRepository;
+    private readonly IPromptComposer _promptComposer;
 
     [ObservableProperty]
     private FileNode? _rootNode;
@@ -84,6 +86,12 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private IPromptFormatter _selectedFormatter;
 
+    [ObservableProperty]
+    private PromptTemplate? _selectedTemplate;
+
+    [ObservableProperty]
+    private string _customInstructions = string.Empty;
+
     public MainWindowViewModel(
         IFileAggregationService fileAggregationService,
         ITokenCountingService tokenCountingService,
@@ -93,7 +101,9 @@ public partial class MainWindowViewModel : ViewModelBase
         ISettingsRepository settingsRepository,
         IUndoRedoManager undoRedoManager,
         IAIResponseParser aiParser,
-        IFileWriterService fileWriter)
+        IFileWriterService fileWriter,
+        IPromptTemplateRepository templateRepository,
+        IPromptComposer promptComposer)
     {
         _fileAggregationService = fileAggregationService;
         _tokenCountingService = tokenCountingService;
@@ -104,6 +114,8 @@ public partial class MainWindowViewModel : ViewModelBase
         _undoRedoManager = undoRedoManager;
         _aiParser = aiParser;
         _fileWriter = fileWriter;
+        _templateRepository = templateRepository;
+        _promptComposer = promptComposer;
 
         // Subscribe to undo/redo state changes
         _undoRedoManager.StateChanged += OnUndoRedoStateChanged;
@@ -119,6 +131,15 @@ public partial class MainWindowViewModel : ViewModelBase
             new ShieldPrompt.Application.Formatters.XmlFormatter()
         };
         _selectedFormatter = AvailableFormatters[1]; // Default to Markdown
+
+        // Initialize templates
+        foreach (var template in _templateRepository.GetAllTemplates())
+        {
+            AvailableTemplates.Add(template);
+        }
+        // Default to Code Review template
+        _selectedTemplate = AvailableTemplates.FirstOrDefault(t => t.Id == "code_review") 
+                           ?? AvailableTemplates.FirstOrDefault();
 
         // Load settings and restore previous state
         _ = InitializeAsync();
@@ -392,6 +413,8 @@ public partial class MainWindowViewModel : ViewModelBase
         new(ModelProfiles.All);
 
     public ObservableCollection<IPromptFormatter> AvailableFormatters { get; }
+
+    public ObservableCollection<PromptTemplate> AvailableTemplates { get; } = new();
 
     [RelayCommand]
     private async Task OpenFolderAsync()

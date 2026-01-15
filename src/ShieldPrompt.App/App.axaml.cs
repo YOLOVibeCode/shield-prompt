@@ -74,6 +74,10 @@ public partial class App : AvaloniaApplication
         services.AddSingleton<Application.Interfaces.IAIResponseParser, Application.Services.AIResponseParser>();
         services.AddSingleton<Application.Interfaces.IFileWriterService, Application.Services.FileWriterService>();
 
+        // Prompt template services
+        services.AddSingleton<Application.Interfaces.IPromptTemplateRepository, Infrastructure.Services.YamlPromptTemplateRepository>();
+        services.AddSingleton<Application.Interfaces.IPromptComposer, Application.Services.PromptComposer>();
+
         // ViewModels
         services.AddSingleton<MainWindowViewModel>();
     }
