@@ -66,23 +66,11 @@
             <MenuItem Header="_View">
                 <MenuItem Header="Show _Shield Preview" 
                           Command="{Binding ToggleShieldPreviewCommand}"
-                          InputGesture="Ctrl+Shift+S">
-                    <MenuItem.Icon>
-                        <TextBlock Text="{Binding ShowSanitizationPreview, Converter={StaticResource BoolToCheckConverter}}" />
-                    </MenuItem.Icon>
-                </MenuItem>
+                          InputGesture="Ctrl+Shift+S"/>
                 <MenuItem Header="Show _Status Bar" 
-                          Command="{Binding ToggleStatusBarCommand}">
-                    <MenuItem.Icon>
-                        <TextBlock Text="{Binding ShowStatusBar, Converter={StaticResource BoolToCheckConverter}}" />
-                    </MenuItem.Icon>
-                </MenuItem>
+                          Command="{Binding ToggleStatusBarCommand}"/>
                 <MenuItem Header="Show _Toolbar" 
-                          Command="{Binding ToggleToolbarCommand}">
-                    <MenuItem.Icon>
-                        <TextBlock Text="{Binding ShowToolbar, Converter={StaticResource BoolToCheckConverter}}" />
-                    </MenuItem.Icon>
-                </MenuItem>
+                          Command="{Binding ToggleToolbarCommand}"/>
                 <Separator/>
                 <MenuItem Header="_Increase Font Size" 
                           Command="{Binding IncreaseFontSizeCommand}"
@@ -182,7 +170,7 @@
         </StackPanel>
 
         <!-- Main Content Area -->
-        <Grid Grid.Row="1" ColumnDefinitions="300,*" Margin="10,0">
+        <Grid Grid.Row="2" ColumnDefinitions="300,*" Margin="10,0">
             <!-- File Tree (Left Panel) -->
             <Border Grid.Column="0" 
                     BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
@@ -317,7 +305,7 @@
         </Grid>
 
         <!-- Status Bar -->
-        <Border Grid.Row="2" 
+        <Border Grid.Row="3" 
                 Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
                 Padding="10,8">
             <Grid ColumnDefinitions="Auto,Auto,*,Auto">
