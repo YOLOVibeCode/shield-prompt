@@ -92,6 +92,15 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private string _customInstructions = string.Empty;
 
+    [ObservableProperty]
+    private string _livePreview = "Select files and a template to see the preview...";
+
+    [ObservableProperty]
+    private int _previewTokenCount;
+
+    [ObservableProperty]
+    private bool _showTokenWarning;
+
     public MainWindowViewModel(
         IFileAggregationService fileAggregationService,
         ITokenCountingService tokenCountingService,
@@ -346,6 +355,14 @@ public partial class MainWindowViewModel : ViewModelBase
             SubscribeToFileSelectionChanges(RootNodeViewModel);
             UpdateSelectedFileCount();
             UpdateEstimatedTokenCount();
+            UpdateLivePreview(); // Update preview when files change
+        }
+        
+        // Update preview when template or custom instructions change
+        if (e.PropertyName == nameof(SelectedTemplate) || 
+            e.PropertyName == nameof(CustomInstructions))
+        {
+            UpdateLivePreview();
         }
     }
     
@@ -357,6 +374,7 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 UpdateSelectedFileCount();
                 UpdateEstimatedTokenCount();
+                UpdateLivePreview(); // Update preview when selection changes
             }
         };
         
@@ -407,6 +425,58 @@ public partial class MainWindowViewModel : ViewModelBase
             sum += SumSelectedTokens(child);
         }
         return sum;
+    }
+
+    private void UpdateLivePreview()
+    {
+        try
+        {
+            // Don't update if no template selected
+            if (SelectedTemplate == null)
+            {
+                LivePreview = "Select a template from the toolbar to see the preview...";
+                PreviewTokenCount = 0;
+                ShowTokenWarning = false;
+                return;
+            }
+
+            // Get selected files
+            var selectedFiles = RootNodeViewModel != null 
+                ? GetSelectedFilesFromViewModel(RootNodeViewModel).ToList()
+                : new List<FileNode>();
+
+            // Don't compose if files have no content (e.g., in tests or before loading)
+            if (selectedFiles.Any() && selectedFiles.All(f => string.IsNullOrEmpty(f.Content)))
+            {
+                LivePreview = $"{SelectedTemplate.Icon} {SelectedTemplate.Name} ready. Select files to see preview...";
+                PreviewTokenCount = 0;
+                ShowTokenWarning = false;
+                return;
+            }
+
+            // Compose the prompt
+            var options = new PromptOptions(
+                CustomInstructions: string.IsNullOrWhiteSpace(CustomInstructions) ? null : CustomInstructions,
+                SelectedFocusAreas: null,
+                IncludeFilePaths: true,
+                IncludeLineNumbers: false);
+
+            var composed = _promptComposer.Compose(SelectedTemplate, selectedFiles, options);
+
+            // Update preview
+            LivePreview = composed.FullPrompt;
+            PreviewTokenCount = composed.EstimatedTokens;
+
+            // Show warning if over 80% of model limit
+            var limit = SelectedModel?.ContextLimit ?? 128000;
+            ShowTokenWarning = PreviewTokenCount > (limit * 0.8);
+        }
+        catch (Exception ex)
+        {
+            LivePreview = $"Error generating preview: {ex.Message}";
+            PreviewTokenCount = 0;
+            ShowTokenWarning = false;
+        }
     }
 
     public ObservableCollection<ModelProfile> AvailableModels { get; } = 
@@ -541,14 +611,19 @@ public partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
+        if (SelectedTemplate == null)
+        {
+            StatusText = "⚠️ Please select a template first";
+            return;
+        }
+
         try
         {
-            StatusText = "Aggregating files...";
+            StatusText = "Composing prompt...";
             
             var selectedFiles = RootNodeViewModel != null 
                 ? GetSelectedFilesFromViewModel(RootNodeViewModel).ToList()
                 : new List<FileNode>();
-            SelectedFileCount = selectedFiles.Count;
 
             if (selectedFiles.Count == 0)
             {
@@ -556,30 +631,33 @@ public partial class MainWindowViewModel : ViewModelBase
                 return;
             }
 
-            // Format using selected formatter
-            var formatted = SelectedFormatter.Format(selectedFiles);
+            // Compose the prompt using the selected template
+            var options = new PromptOptions(
+                CustomInstructions: string.IsNullOrWhiteSpace(CustomInstructions) ? null : CustomInstructions,
+                SelectedFocusAreas: null,
+                IncludeFilePaths: true,
+                IncludeLineNumbers: false);
+
+            var composed = _promptComposer.Compose(SelectedTemplate, selectedFiles, options);
             
             // 🔐 SANITIZE - Replace sensitive data with aliases
             StatusText = "🔐 Sanitizing sensitive data...";
-            var sanitizationResult = _sanitizationEngine.Sanitize(formatted, new SanitizationOptions());
-            
-            // Update preview with what was sanitized
-            UpdateSanitizationPreview(sanitizationResult);
-            
-            // Count tokens on sanitized content
-            TotalTokens = _tokenCountingService.CountTokens(sanitizationResult.SanitizedContent);
-            SanitizedValueCount = sanitizationResult.TotalMatches;
+            var sanitizationResult = _sanitizationEngine.Sanitize(composed.FullPrompt, new SanitizationOptions());
             
             // Copy sanitized content to clipboard
             await ClipboardService.SetTextAsync(sanitizationResult.SanitizedContent);
             
+            // Update counts
+            TotalTokens = composed.EstimatedTokens;
+            SanitizedValueCount = sanitizationResult.TotalMatches;
+            
             if (sanitizationResult.WasSanitized)
             {
-                StatusText = $"✅ Copied {SelectedFileCount} files - 🔐 {SanitizedValueCount} values sanitized - {TotalTokens:N0} tokens";
+                StatusText = $"✅ Copied with {SelectedTemplate.Icon} {SelectedTemplate.Name} - 🔐 {SanitizedValueCount} values sanitized - {TotalTokens:N0} tokens";
             }
             else
             {
-                StatusText = $"✅ Copied {SelectedFileCount} files - {TotalTokens:N0} tokens (no sensitive data found)";
+                StatusText = $"✅ Copied with {SelectedTemplate.Icon} {SelectedTemplate.Name} - {TotalTokens:N0} tokens (no sensitive data)";
             }
 
             // Save settings after successful copy

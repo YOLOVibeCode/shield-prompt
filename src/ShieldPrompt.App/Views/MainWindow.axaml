@@ -243,13 +243,15 @@
                     CornerRadius="4"
                     Padding="10"
                     Margin="5,0,0,0">
-                <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
-                    <!-- Header -->
-                    <TextBlock Grid.Row="0" 
-                               Text="Prompt Builder"
-                               FontWeight="Bold"
-                               VerticalAlignment="Center"
-                               Margin="0,0,0,10"/>
+                <Grid RowDefinitions="*,Auto,*">
+                    <!-- Top: Prompt Builder -->
+                    <Grid Grid.Row="0" RowDefinitions="Auto,Auto,Auto,*,Auto">
+                        <!-- Header -->
+                        <TextBlock Grid.Row="0" 
+                                   Text="Prompt Builder"
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,0,10"/>
                     
                     <!-- Template Info -->
                     <Border Grid.Row="1"
@@ -276,8 +278,8 @@
                         <TextBox Text="{Binding CustomInstructions}"
                                  AcceptsReturn="True"
                                  TextWrapping="Wrap"
-                                 MinHeight="80"
-                                 MaxHeight="150"
+                                 MinHeight="60"
+                                 MaxHeight="120"
                                  Watermark="Enter any specific instructions or context for the AI..."
                                  ToolTip.Tip="Add custom context, describe issues, or specify what you want the AI to focus on"/>
                         <TextBlock Text="{Binding CustomInstructions.Length, StringFormat='{}{0} characters'}"
@@ -289,10 +291,11 @@
                     <!-- Info Text -->
                     <ScrollViewer Grid.Row="3">
                         <TextBlock TextWrapping="Wrap"
-                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}">
-                            <Run Text="💡 Tip: Select files, choose a task, and add instructions."/>
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                   FontSize="11">
+                            <Run Text="💡 Select files, choose task, add instructions."/>
                             <LineBreak/>
-                            <Run Text="Your prompt will be automatically composed and sanitized."/>
+                            <Run Text="Preview updates automatically below."/>
                         </TextBlock>
                     </ScrollViewer>
 
@@ -311,6 +314,63 @@
                         </Button.Styles>
                     </Button>
                 </Grid>
+
+                <!-- Vertical GridSplitter -->
+                <GridSplitter Grid.Row="1"
+                              Height="6"
+                              Background="Transparent"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch"
+                              ToolTip.Tip="Drag to resize (double-click to reset)">
+                    <GridSplitter.Styles>
+                        <Style Selector="GridSplitter">
+                            <Setter Property="Background" Value="Transparent"/>
+                        </Style>
+                        <Style Selector="GridSplitter:pointerover">
+                            <Setter Property="Background" Value="{DynamicResource SystemControlHighlightBaseMediumBrush}"/>
+                            <Setter Property="Cursor" Value="SizeNorthSouth"/>
+                        </Style>
+                    </GridSplitter.Styles>
+                </GridSplitter>
+
+                <!-- Bottom: Live Preview -->
+                <Grid Grid.Row="2" RowDefinitions="Auto,*,Auto">
+                    <TextBlock Grid.Row="0"
+                               Text="Live Preview"
+                               FontWeight="Bold"
+                               Margin="0,10,0,10"/>
+                    
+                    <Border Grid.Row="1"
+                            BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
+                            Padding="5">
+                        <ScrollViewer>
+                            <TextBlock Text="{Binding LivePreview}"
+                                       TextWrapping="Wrap"
+                                       FontFamily="Consolas,Menlo,monospace"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                        </ScrollViewer>
+                    </Border>
+
+                    <StackPanel Grid.Row="2" 
+                                Orientation="Horizontal" 
+                                Spacing="10" 
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Right">
+                        <TextBlock Text="{Binding PreviewTokenCount, StringFormat='{}{0:N0} tokens'}"
+                                   FontSize="11"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="⚠️ Near limit"
+                                   FontSize="11"
+                                   Foreground="Orange"
+                                   VerticalAlignment="Center"
+                                   IsVisible="{Binding ShowTokenWarning}"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
             </Border>
         </Grid>
 
