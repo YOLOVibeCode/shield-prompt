@@ -32,6 +32,10 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly IFileWriterService _fileWriter;
     private readonly IPromptTemplateRepository _templateRepository;
     private readonly IPromptComposer _promptComposer;
+    private readonly ILayoutStateRepository _layoutRepository;
+    private readonly IRoleRepository _roleRepository;
+    private readonly ICustomRoleRepository _customRoleRepository;
+    private readonly IFormatMetadataRepository _formatMetadataRepository;
 
     [ObservableProperty]
     private FileNode? _rootNode;
@@ -87,10 +91,25 @@ public partial class MainWindowViewModel : ViewModelBase
     private IPromptFormatter _selectedFormatter;
 
     [ObservableProperty]
+    private FormatMetadata? _selectedFormatMetadata;
+
+    [ObservableProperty]
     private PromptTemplate? _selectedTemplate;
 
     [ObservableProperty]
     private string _customInstructions = string.Empty;
+
+    // AI Role selection
+    public ObservableCollection<Role> AvailableRoles { get; } = new();
+    
+    [ObservableProperty]
+    private Role? _selectedRole;
+
+    // Focus Areas for selected template
+    public ObservableCollection<FocusAreaItem> AvailableFocusAreas { get; } = new();
+
+    [ObservableProperty]
+    private bool _hasFocusAreas;
 
     [ObservableProperty]
     private string _livePreview = "Select files and a template to see the preview...";
@@ -101,6 +120,29 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private bool _showTokenWarning;
 
+    // Layout State Properties
+    [ObservableProperty]
+    private double _fileTreeWidth = LayoutDefaults.FileTreeWidth;
+
+    [ObservableProperty]
+    private double _promptBuilderHeightRatio = LayoutDefaults.PromptBuilderHeight;
+
+    [ObservableProperty]
+    private bool _isFileTreeCollapsed;
+
+    [ObservableProperty]
+    private bool _isPromptBuilderCollapsed;
+
+    [ObservableProperty]
+    private bool _isPreviewCollapsed;
+    
+    [ObservableProperty]
+    private bool _isCopyFlashActive;
+    
+    public RoleEditorViewModel RoleEditorViewModel { get; }
+    public OutputFormatSettingsViewModel OutputFormatSettingsViewModel { get; }
+    public LlmResponseViewModel LlmResponseViewModel { get; }
+    
     public MainWindowViewModel(
         IFileAggregationService fileAggregationService,
         ITokenCountingService tokenCountingService,
@@ -112,7 +154,14 @@ public partial class MainWindowViewModel : ViewModelBase
         IAIResponseParser aiParser,
         IFileWriterService fileWriter,
         IPromptTemplateRepository templateRepository,
-        IPromptComposer promptComposer)
+        IPromptComposer promptComposer,
+        ILayoutStateRepository layoutRepository,
+        IRoleRepository roleRepository,
+        ICustomRoleRepository customRoleRepository,
+        IFormatMetadataRepository formatMetadataRepository,
+        RoleEditorViewModel roleEditorViewModel,
+        OutputFormatSettingsViewModel outputFormatSettingsViewModel,
+        LlmResponseViewModel llmResponseViewModel)
     {
         _fileAggregationService = fileAggregationService;
         _tokenCountingService = tokenCountingService;
@@ -125,12 +174,22 @@ public partial class MainWindowViewModel : ViewModelBase
         _fileWriter = fileWriter;
         _templateRepository = templateRepository;
         _promptComposer = promptComposer;
-
+        _layoutRepository = layoutRepository;
+        _roleRepository = roleRepository;
+        _customRoleRepository = customRoleRepository;
+        _formatMetadataRepository = formatMetadataRepository;
+        RoleEditorViewModel = roleEditorViewModel;
+        OutputFormatSettingsViewModel = outputFormatSettingsViewModel;
+        LlmResponseViewModel = llmResponseViewModel;
+        
         // Subscribe to undo/redo state changes
         _undoRedoManager.StateChanged += OnUndoRedoStateChanged;
         
         // Subscribe to property changes for live counter updates
         PropertyChanged += OnViewModelPropertyChanged;
+
+        // Subscribe to layout property changes for persistence
+        PropertyChanged += OnLayoutPropertyChanged;
 
         // Initialize formatters
         AvailableFormatters = new ObservableCollection<IPromptFormatter>
@@ -149,6 +208,18 @@ public partial class MainWindowViewModel : ViewModelBase
         // Default to Code Review template
         _selectedTemplate = AvailableTemplates.FirstOrDefault(t => t.Id == "code_review") 
                            ?? AvailableTemplates.FirstOrDefault();
+
+        // Initialize roles (built-in + custom)
+        foreach (var role in _roleRepository.GetAllRoles())
+        {
+            AvailableRoles.Add(role);
+        }
+        foreach (var role in _customRoleRepository.GetCustomRoles())
+        {
+            AvailableRoles.Add(role);
+        }
+        // Default to Software Engineer role
+        _selectedRole = _roleRepository.GetDefault();
 
         // Load settings and restore previous state
         _ = InitializeAsync();
@@ -174,6 +245,17 @@ public partial class MainWindowViewModel : ViewModelBase
                 var formatter = AvailableFormatters.FirstOrDefault(f => f.FormatName == settings.LastFormatName);
                 if (formatter != null)
                     SelectedFormatter = formatter;
+            }
+
+            // Load saved layout state
+            var savedState = await _layoutRepository.LoadLayoutStateAsync();
+            if (savedState != null)
+            {
+                FileTreeWidth = savedState.FileTreeWidth;
+                PromptBuilderHeightRatio = savedState.PromptBuilderHeight;
+                IsFileTreeCollapsed = savedState.IsFileTreeCollapsed;
+                IsPromptBuilderCollapsed = savedState.IsPromptBuilderCollapsed;
+                IsPreviewCollapsed = savedState.IsPreviewCollapsed;
             }
 
             // Auto-open last folder
@@ -445,8 +527,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 ? GetSelectedFilesFromViewModel(RootNodeViewModel).ToList()
                 : new List<FileNode>();
 
-            // Don't compose if files have no content (e.g., in tests or before loading)
-            if (selectedFiles.Any() && selectedFiles.All(f => string.IsNullOrEmpty(f.Content)))
+            if (!selectedFiles.Any())
             {
                 LivePreview = $"{SelectedTemplate.Icon} {SelectedTemplate.Name} ready. Select files to see preview...";
                 PreviewTokenCount = 0;
@@ -454,10 +535,32 @@ public partial class MainWindowViewModel : ViewModelBase
                 return;
             }
 
+            // Load file content if not already loaded (lazy load for preview)
+            foreach (var file in selectedFiles)
+            {
+                if (string.IsNullOrEmpty(file.Content) && File.Exists(file.Path))
+                {
+                    try
+                    {
+                        file.Content = File.ReadAllText(file.Path);
+                    }
+                    catch
+                    {
+                        file.Content = "[Error loading file]";
+                    }
+                }
+            }
+
             // Compose the prompt
+            var selectedFocusAreas = AvailableFocusAreas
+                .Where(fa => fa.IsSelected)
+                .Select(fa => fa.Name)
+                .ToList();
+            
             var options = new PromptOptions(
                 CustomInstructions: string.IsNullOrWhiteSpace(CustomInstructions) ? null : CustomInstructions,
-                SelectedFocusAreas: null,
+                SelectedFocusAreas: selectedFocusAreas.Count > 0 ? selectedFocusAreas : null,
+                SelectedRole: SelectedRole,
                 IncludeFilePaths: true,
                 IncludeLineNumbers: false);
 
@@ -522,6 +625,9 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             RootNode = await _fileAggregationService.LoadDirectoryAsync(folderPath);
             RootNodeViewModel = new FileNodeViewModel(RootNode);
+            
+            // Auto-expand the root node so files are visible
+            RootNodeViewModel.IsExpanded = true;
             
             // Restore previous file selection if provided
             if (selectedFiles != null && selectedFiles.Count > 0)
@@ -632,9 +738,15 @@ public partial class MainWindowViewModel : ViewModelBase
             }
 
             // Compose the prompt using the selected template
+            var selectedFocusAreas = AvailableFocusAreas
+                .Where(fa => fa.IsSelected)
+                .Select(fa => fa.Name)
+                .ToList();
+            
             var options = new PromptOptions(
                 CustomInstructions: string.IsNullOrWhiteSpace(CustomInstructions) ? null : CustomInstructions,
-                SelectedFocusAreas: null,
+                SelectedFocusAreas: selectedFocusAreas.Count > 0 ? selectedFocusAreas : null,
+                SelectedRole: SelectedRole,
                 IncludeFilePaths: true,
                 IncludeLineNumbers: false);
 
@@ -712,6 +824,40 @@ public partial class MainWindowViewModel : ViewModelBase
     private void ToggleStatusBar()
     {
         ShowStatusBar = !ShowStatusBar;
+    }
+
+    [RelayCommand]
+    private async Task CopyLivePreview()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(LivePreview))
+            {
+                StatusText = "⚠️ No content to copy";
+                return;
+            }
+
+            // Copy to clipboard
+            await TextCopy.ClipboardService.SetTextAsync(LivePreview);
+            
+            // Show flash animation
+            IsCopyFlashActive = true;
+            
+            // Update status message
+            var tokenInfo = PreviewTokenCount > 0 ? $" ({PreviewTokenCount:N0} tokens)" : "";
+            StatusText = $"📋 Copied to clipboard{tokenInfo}";
+            
+            // Auto-dismiss flash after 2 seconds
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(2000);
+                IsCopyFlashActive = false;
+            });
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"❌ Copy failed: {ex.Message}";
+        }
     }
 
     [RelayCommand]
@@ -969,6 +1115,136 @@ GitHub: https://github.com/YOLOVibeCode/shield-prompt
             StatusText = $"📋 URL copied to clipboard: {url}";
         }
     }
+
+    // Layout State Management
+
+    private System.Timers.Timer? _layoutSaveTimer;
+
+    private void OnLayoutPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(FileTreeWidth) or nameof(PromptBuilderHeightRatio) 
+            or nameof(IsFileTreeCollapsed) or nameof(IsPromptBuilderCollapsed) or nameof(IsPreviewCollapsed))
+        {
+            // Debounce save to avoid excessive file I/O
+            _layoutSaveTimer?.Stop();
+            _layoutSaveTimer?.Dispose();
+            _layoutSaveTimer = new System.Timers.Timer(500); // 500ms debounce
+            _layoutSaveTimer.Elapsed += async (s, args) =>
+            {
+                await SaveLayoutStateAsync();
+                _layoutSaveTimer?.Dispose();
+            };
+            _layoutSaveTimer.AutoReset = false;
+            _layoutSaveTimer.Start();
+        }
+    }
+
+    private async Task SaveLayoutStateAsync()
+    {
+        var state = new LayoutState(
+            FileTreeWidth,
+            PromptBuilderHeightRatio,
+            IsFileTreeCollapsed,
+            IsPromptBuilderCollapsed,
+            IsPreviewCollapsed);
+
+        await _layoutRepository.SaveLayoutStateAsync(state);
+    }
+
+    partial void OnFileTreeWidthChanged(double value)
+    {
+        // Enforce minimum width
+        if (value < 200)
+        {
+            FileTreeWidth = 200;
+        }
+    }
+
+    partial void OnPromptBuilderHeightRatioChanged(double value)
+    {
+        // Enforce bounds (20% to 80%)
+        if (value < 0.2)
+        {
+            PromptBuilderHeightRatio = 0.2;
+        }
+        else if (value > 0.8)
+        {
+            PromptBuilderHeightRatio = 0.8;
+        }
+    }
+
+    partial void OnSelectedTemplateChanged(PromptTemplate? value)
+    {
+        // Update focus areas when template changes
+        AvailableFocusAreas.Clear();
+        
+        if (value?.FocusOptions != null && value.FocusOptions.Count > 0)
+        {
+            foreach (var focusArea in value.FocusOptions)
+            {
+                var item = new FocusAreaItem { Name = focusArea, IsSelected = false };
+                item.PropertyChanged += (s, e) => {
+                    if (e.PropertyName == nameof(FocusAreaItem.IsSelected))
+                    {
+                        UpdateLivePreview();
+                    }
+                };
+                AvailableFocusAreas.Add(item);
+            }
+            HasFocusAreas = true;
+        }
+        else
+        {
+            HasFocusAreas = false;
+        }
+        
+        UpdateLivePreview();
+    }
+
+    partial void OnSelectedRoleChanged(Role? value)
+    {
+        // Regenerate live preview when role changes
+        UpdateLivePreview();
+    }
+
+    partial void OnSelectedFormatterChanged(IPromptFormatter value)
+    {
+        // Update format metadata when formatter changes
+        if (value != null)
+        {
+            var formatterId = value.GetType().Name.Replace("Formatter", "").ToLowerInvariant();
+            SelectedFormatMetadata = _formatMetadataRepository.GetById(formatterId);
+        }
+        else
+        {
+            SelectedFormatMetadata = null;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ResetLayout()
+    {
+        FileTreeWidth = LayoutDefaults.FileTreeWidth;
+        PromptBuilderHeightRatio = LayoutDefaults.PromptBuilderHeight;
+        IsFileTreeCollapsed = LayoutDefaults.IsFileTreeCollapsed;
+        IsPromptBuilderCollapsed = LayoutDefaults.IsPromptBuilderCollapsed;
+        IsPreviewCollapsed = LayoutDefaults.IsPreviewCollapsed;
+
+        await _layoutRepository.ResetToDefaultAsync();
+        StatusText = "✅ Layout reset to default";
+    }
+}
+
+/// <summary>
+/// View model for a selectable focus area checkbox.
+/// </summary>
+public partial class FocusAreaItem : ObservableObject
+{
+    [ObservableProperty]
+    private string _name = string.Empty;
+
+    [ObservableProperty]
+    private bool _isSelected;
 }
 
 public record SanitizationPreviewItem(

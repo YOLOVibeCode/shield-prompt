@@ -1,0 +1,277 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ShieldPrompt.App.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
+             x:Class="ShieldPrompt.App.Views.OutputFormatSettingsView"
+             x:DataType="vm:OutputFormatSettingsViewModel">
+    
+    <Design.DataContext>
+        <vm:OutputFormatSettingsViewModel />
+    </Design.DataContext>
+    
+    <ScrollViewer>
+        <StackPanel Margin="20" Spacing="15">
+            
+            <!-- Page Title -->
+            <TextBlock Text="⚙️ Output Format Settings"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       Margin="0,0,0,10"/>
+            
+            <TextBlock Text="Configure how ShieldPrompt generates prompts and parses LLM responses."
+                       FontSize="13"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,20"/>
+            
+            <!-- Output Format Section -->
+            <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="15">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="📋 Response Format"
+                               FontSize="16"
+                               FontWeight="SemiBold"/>
+                    
+                    <TextBlock Text="Select the format for LLM response instructions:"
+                               FontSize="12"
+                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                               TextWrapping="Wrap"/>
+                    
+                    <ListBox ItemsSource="{Binding AvailableFormats}"
+                             SelectedItem="{Binding SelectedFormat}"
+                             Height="250"
+                             Margin="0,10,0,0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Spacing="5" Margin="5">
+                                    <TextBlock Text="{Binding DisplayName}"
+                                               FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Description}"
+                                               FontSize="11"
+                                               TextWrapping="Wrap"
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="15">
+                                        <TextBlock Text="{Binding LlmAdherenceText, StringFormat='LLM Adherence: {0}'}"
+                                                   FontSize="10"/>
+                                        <TextBlock Text="{Binding ParseReliabilityText, StringFormat='Parse: {0}'}"
+                                                   FontSize="10"/>
+                                        <TextBlock Text="{Binding TokenEfficiencyText, StringFormat='Tokens: {0}'}"
+                                                   FontSize="10"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding BestFor, StringFormat='Best for: {0}'}"
+                                               FontSize="10"
+                                               FontStyle="Italic"
+                                               Foreground="{DynamicResource SystemControlHighlightAccentBrush}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    
+                    <Button Content="👁️ Preview Format"
+                            Command="{Binding PreviewFormatCommand}"
+                            HorizontalAlignment="Right"
+                            Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Partial Updates Section -->
+            <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="15">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="✂️ Partial Updates"
+                               FontSize="16"
+                               FontWeight="SemiBold"/>
+                    
+                    <CheckBox IsChecked="{Binding EnablePartialUpdates}"
+                              Content="Enable partial file updates (line-range modifications)"
+                              IsEnabled="{Binding SelectedFormat.SupportsPartialUpdates}"/>
+                    
+                    <TextBlock Text="Allows LLM to modify specific lines instead of replacing entire files. Reduces token usage and conflict risk."
+                               FontSize="11"
+                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                               TextWrapping="Wrap"
+                               Margin="25,0,0,0"/>
+                    
+                    <TextBlock Text="⚠️ Note: Not all formats support partial updates well. Recommended for Hybrid XML and Pure XML."
+                               FontSize="11"
+                               Foreground="Orange"
+                               TextWrapping="Wrap"
+                               Margin="25,5,0,0"
+                               IsVisible="{Binding !SelectedFormat.SupportsPartialUpdates}"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Auto-Apply Section -->
+            <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="15"
+                    Background="#10FF6B00">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="⚡ Auto-Apply Behavior (⚠️ Experimental)"
+                               FontSize="16"
+                               FontWeight="SemiBold"/>
+                    
+                    <CheckBox IsChecked="{Binding EnableAutoApply}"
+                              Content="Enable Auto-Apply (DANGEROUS!)"/>
+                    
+                    <TextBlock Text="⚠️ WARNING: Auto-Apply automatically applies LLM changes without full preview. Only enable if you:"
+                               FontSize="11"
+                               Foreground="OrangeRed"
+                               TextWrapping="Wrap"
+                               Margin="25,0,0,0"
+                               FontWeight="SemiBold"/>
+                    
+                    <StackPanel Margin="35,0,0,0" Spacing="3">
+                        <TextBlock Text="• Trust the LLM completely" FontSize="11"/>
+                        <TextBlock Text="• Are using version control (Git)" FontSize="11"/>
+                        <TextBlock Text="• Understand changes can be destructive" FontSize="11"/>
+                    </StackPanel>
+                    
+                    <StackPanel IsVisible="{Binding EnableAutoApply}" Margin="0,10,0,0" Spacing="8">
+                        <TextBlock Text="Auto-Apply Mode:" FontWeight="SemiBold"/>
+                        <RadioButton Content="Preview then prompt (safest)"
+                                     IsChecked="{Binding IsPreviewThenPrompt}"
+                                     GroupName="AutoApply"/>
+                        <RadioButton Content="5-second countdown with backup (recommended)"
+                                     IsChecked="{Binding IsCountdownWithBackup}"
+                                     GroupName="AutoApply"/>
+                        <RadioButton Content="Apply immediately (dangerous!)"
+                                     IsChecked="{Binding IsImmediateApply}"
+                                     GroupName="AutoApply"
+                                     Foreground="OrangeRed"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            
+            <!-- Conflict Resolution Section -->
+            <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="15">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="⚔️ Conflict Resolution"
+                               FontSize="16"
+                               FontWeight="SemiBold"/>
+                    
+                    <TextBlock Text="When a file was modified since prompt generation:"
+                               FontSize="12"
+                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    
+                    <RadioButton Content="Prompt user for each conflict (safest)"
+                                 IsChecked="{Binding IsPromptUser}"
+                                 GroupName="Conflict"/>
+                    <RadioButton Content="Always skip conflicted files"
+                                 IsChecked="{Binding IsAlwaysSkip}"
+                                 GroupName="Conflict"/>
+                    <RadioButton Content="Always overwrite (dangerous!)"
+                                 IsChecked="{Binding IsAlwaysOverwrite}"
+                                 GroupName="Conflict"
+                                 Foreground="OrangeRed"/>
+                    <RadioButton Content="Auto-merge if possible"
+                                 IsChecked="{Binding IsAutoMerge}"
+                                 GroupName="Conflict"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Advanced Options Section -->
+            <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="15">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="🔧 Advanced Options"
+                               FontSize="16"
+                               FontWeight="SemiBold"/>
+                    
+                    <CheckBox IsChecked="{Binding IncludeSessionMetadata}"
+                              Content="Include session metadata in prompts"/>
+                    <CheckBox IsChecked="{Binding IncludeTokenCounts}"
+                              Content="Add token count to each file header"/>
+                    <CheckBox IsChecked="{Binding IncludeTimestamps}"
+                              Content="Include file modification timestamps"/>
+                    
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,0">
+                        <TextBlock Text="Maximum response size:"
+                                   VerticalAlignment="Center"/>
+                        <NumericUpDown Value="{Binding MaxResponseSizeMB}"
+                                       Minimum="1"
+                                       Maximum="100"
+                                       Width="100"/>
+                        <TextBlock Text="MB"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="Parser timeout:"
+                                   VerticalAlignment="Center"/>
+                        <NumericUpDown Value="{Binding ParserTimeoutSeconds}"
+                                       Minimum="5"
+                                       Maximum="300"
+                                       Width="100"/>
+                        <TextBlock Text="seconds"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            
+            <!-- Format Preview Section -->
+            <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="15"
+                    IsVisible="{Binding FormatPreview, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="👁️ Format Preview"
+                               FontSize="16"
+                               FontWeight="SemiBold"/>
+                    
+                    <TextBlock Text="Example of what the LLM response should look like:"
+                               FontSize="12"
+                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    
+                    <Border Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
+                            BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="10"
+                            MaxHeight="300">
+                        <ScrollViewer>
+                            <TextBlock Text="{Binding FormatPreview}"
+                                       FontFamily="Consolas,Menlo,monospace"
+                                       FontSize="10"
+                                       TextWrapping="Wrap"/>
+                        </ScrollViewer>
+                    </Border>
+                </StackPanel>
+            </Border>
+            
+            <!-- Status Message -->
+            <TextBlock Text="{Binding StatusMessage}"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       IsVisible="{Binding StatusMessage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+            
+            <!-- Action Buttons -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="10"
+                        Margin="0,20,0,0">
+                <Button Content="🔄 Restore Defaults"
+                        Command="{Binding RestoreDefaultsCommand}"/>
+                <Button Content="💾 Save Settings"
+                        Command="{Binding SaveSettingsCommand}"
+                        Classes="Accent"/>
+            </StackPanel>
+            
+        </StackPanel>
+    </ScrollViewer>
+    
+</UserControl>
+

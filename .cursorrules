@@ -52,6 +52,72 @@ ROLE: <role> STRICT=<bool>
 
 ## ⚠️ MANDATORY DEVELOPMENT PRINCIPLES - READ FIRST
 
+### 🏗️ BACKEND-FIRST, TEST-FIRST, UI-LAST (NON-NEGOTIABLE)
+
+**ALL features MUST be built as testable backend components FIRST. UI is LAST.**
+
+```
+STRICT IMPLEMENTATION ORDER:
+1. DOMAIN     → Define entities, records, value objects
+2. INTERFACE  → Define small, focused interfaces (ISP)
+3. TEST       → Write tests for interface contracts (TDD RED)
+4. SERVICE    → Implement service to pass tests (TDD GREEN)
+5. REFACTOR   → Clean up while keeping tests green
+6. UI         → Wire up to existing tested components (LAST!)
+```
+
+**Backend-First Rules:**
+- ⚠️ **MUST**: ALL business logic lives in Application/Domain/Infrastructure layers
+- ⚠️ **MUST**: ViewModels ONLY orchestrate - NO business logic
+- ⚠️ **MUST**: Views ONLY bind - NO code-behind logic
+- ⚠️ **MUST**: Every feature works without UI (testable via services)
+- ⚠️ **MUST**: UI is pure "wiring" - connecting services to display
+
+**Component Architecture:**
+```csharp
+// ❌ REJECT - Logic in ViewModel
+public class MainWindowViewModel
+{
+    private void ProcessFiles()
+    {
+        foreach (var file in files)
+        {
+            var content = File.ReadAllText(file.Path);  // ❌ Logic here!
+            var sanitized = Regex.Replace(content, pattern, alias);  // ❌ Logic here!
+        }
+    }
+}
+
+// ✅ REQUIRE - ViewModel delegates to services
+public class MainWindowViewModel(
+    IFileAggregationService fileService,    // Injected
+    ISanitizationEngine sanitizationEngine) // Injected
+{
+    [RelayCommand]
+    private async Task ProcessFilesAsync()
+    {
+        var files = await fileService.LoadDirectoryAsync(path);     // Delegate
+        var result = sanitizationEngine.Sanitize(content, options); // Delegate
+        // ViewModel only updates UI state
+    }
+}
+```
+
+**Feature Development Checklist:**
+```
+Before touching ANY UI code, verify:
+□ Domain model exists (entity/record)
+□ Interface defined (≤5 methods, single purpose)
+□ Unit tests written and passing
+□ Service implemented and tested
+□ Integration test covers full workflow
+THEN and ONLY THEN:
+□ Add ViewModel command/property
+□ Add XAML binding
+```
+
+---
+
 ### 🧪 TEST-DRIVEN DEVELOPMENT (NON-NEGOTIABLE)
 
 **ALL business logic MUST be validated through tests BEFORE implementation.**
@@ -68,6 +134,7 @@ STRICT TDD WORKFLOW:
 - ⚠️ **MUST**: Each interface method has corresponding tests
 - ⚠️ **MUST**: Tests exercise full business workflows
 - ⚠️ **MUST**: No implementation without passing tests first
+- ⚠️ **MUST**: Backend services fully tested before ViewModel created
 - **Coverage targets**: 90% statements, 85% branches, 90% functions
 
 **Test Naming Convention:**
@@ -363,6 +430,44 @@ foreach (var item in items)
 | **Infrastructure** | Domain, Application | Presentation |
 | **Presentation** | Domain, Application | Infrastructure (via DI only) |
 
+### Component Responsibility Matrix (STRICT)
+
+| Component | ALLOWED | FORBIDDEN |
+|-----------|---------|-----------|
+| **Domain Entities** | Properties, validation, factory methods | IO, async, external calls |
+| **Domain Records** | Immutable data transfer | Behavior, logic |
+| **Application Services** | Business logic, orchestration | UI concerns, View references |
+| **Infrastructure Services** | File IO, HTTP, persistence | Business logic |
+| **ViewModels** | Command handlers, property binding, service delegation | Business logic, direct IO |
+| **Views (XAML)** | Data binding, layout, styling | Code-behind logic, service calls |
+
+### What Goes Where
+
+```csharp
+// Domain Layer - Pure business concepts
+public record FileOperation(FileOperationType Type, string Path, string? Content);
+public enum FileOperationType { Create, Update, Delete }
+
+// Application Layer - Business logic services
+public interface IFileWriterService { Task<Result> ApplyAsync(FileOperation op); }
+public class FileWriterService : IFileWriterService { /* implementation */ }
+
+// Infrastructure Layer - External concerns
+public class JsonSettingsRepository : ISettingsRepository { /* file IO */ }
+
+// Presentation Layer - UI wiring ONLY
+public partial class MainWindowViewModel : ViewModelBase
+{
+    [RelayCommand]
+    private async Task ApplyChangesAsync()
+    {
+        // ✅ Delegate to service - NO logic here
+        var result = await _fileWriter.ApplyAsync(operation);
+        StatusText = result.IsSuccess ? "Done" : result.Error;
+    }
+}
+```
+
 ### Project Structure
 
 ```
@@ -599,7 +704,19 @@ Potential refactors (not implemented): [list]
 
 ## Self-Check Before Submitting
 
-- [ ] Tests written FIRST (TDD)
+### Architecture Compliance (CHECK FIRST)
+- [ ] Feature implemented as backend service FIRST
+- [ ] Service has interface (ISP: ≤5 methods)
+- [ ] Unit tests exist and pass for service
+- [ ] ViewModel ONLY delegates to services (no logic)
+- [ ] View ONLY binds (no code-behind)
+
+### TDD Compliance
+- [ ] Tests written FIRST (TDD RED phase)
+- [ ] Tests pass (TDD GREEN phase)
+- [ ] Code refactored with tests still green
+
+### Code Quality
 - [ ] All interfaces segregated (<10 methods)
 - [ ] No `any` types or unsafe casts
 - [ ] Async methods use CancellationToken
@@ -611,6 +728,12 @@ Potential refactors (not implemented): [list]
 - [ ] Uses GlobalUsings.* for common imports
 - [ ] XML documentation on public APIs
 - [ ] STRICT mode honored
+
+### Before UI Work
+- [ ] Backend service fully tested
+- [ ] Service works without UI (verified via tests)
+- [ ] Interface is stable (won't change during UI work)
+- [ ] ViewModel is thin (delegation only)
 
 ---
 
@@ -654,10 +777,78 @@ When explaining decisions, reference:
 1. **SPECIFICATION.md** - Full product specification
 2. **README.md** - Project overview
 3. **architecture-checklist.md** - If present, follow strictly
+4. **docs/implementation/** - Phase specifications
+
+---
+
+## Implementation Workflow (MANDATORY)
+
+### Adding a New Feature
+
+```
+STEP 1: DOMAIN (no tests needed)
+├── Create entity/record in ShieldPrompt.Domain
+├── Define enums if needed
+└── Commit: "feat(domain): Add XYZ entity"
+
+STEP 2: INTERFACE (no tests needed)
+├── Create interface in ShieldPrompt.Application/Interfaces
+├── Apply ISP: ≤5 methods per interface
+└── Commit: "feat(app): Add IXYZService interface"
+
+STEP 3: TESTS (TDD RED)
+├── Create test class in ShieldPrompt.Tests.Unit
+├── Write tests for EVERY interface method
+├── Tests should FAIL (no implementation yet)
+└── Commit: "test: Add XYZService tests (red)"
+
+STEP 4: SERVICE (TDD GREEN)
+├── Implement service in ShieldPrompt.Application/Services
+├── Run tests until ALL pass
+├── Refactor while keeping tests green
+└── Commit: "feat(app): Implement XYZService (green)"
+
+STEP 5: INFRASTRUCTURE (if needed)
+├── Implement repository/external service
+├── Add integration tests
+└── Commit: "feat(infra): Add XYZ repository"
+
+STEP 6: VIEWMODEL (UI wiring)
+├── Add command/properties to ViewModel
+├── Inject service via constructor
+├── Delegate ALL logic to service
+└── Commit: "feat(vm): Wire up XYZ to ViewModel"
+
+STEP 7: VIEW (UI binding)
+├── Add XAML bindings
+├── NO code-behind logic
+└── Commit: "feat(view): Add XYZ UI"
+```
+
+### Feature Implementation Order
+
+When implementing a multi-part feature:
+
+```
+Example: "Apply Mode Enhancement"
+
+1. FileOperation record          → Domain
+2. IFileOperationPreview         → Interface (preview diff)
+3. IFileOperationApplier         → Interface (apply changes)
+4. FileOperationPreviewTests     → Tests
+5. FileOperationApplierTests     → Tests
+6. FileOperationPreviewService   → Service
+7. FileOperationApplierService   → Service
+8. ApplyDashboardViewModel       → ViewModel (LAST)
+9. ApplyDashboard.axaml          → View (VERY LAST)
+
+⚠️ NEVER skip to step 8 or 9 without completing 1-7!
+```
 
 ---
 
 **Remember: This is a SECURITY-FOCUSED application. When in doubt, fail secure.**
+**Remember: BACKEND-FIRST, TEST-FIRST, UI-LAST. No exceptions.**
 
 **Last Updated:** January 14, 2026  
 **Status:** ACTIVE - ENFORCED

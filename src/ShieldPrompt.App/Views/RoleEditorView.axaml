@@ -1,0 +1,190 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:ShieldPrompt.App.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
+             x:Class="ShieldPrompt.App.Views.RoleEditorView"
+             x:DataType="vm:RoleEditorViewModel">
+    
+    <Grid RowDefinitions="Auto,*" Margin="10">
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Spacing="10" Margin="0,0,0,15">
+            <TextBlock Text="📝 Role Editor" 
+                       FontSize="20" 
+                       FontWeight="Bold"/>
+            <TextBlock Text="Create and manage custom AI roles for prompt generation"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+            
+            <!-- Status Bar -->
+            <Border Background="{DynamicResource SystemControlHighlightAccentBrush}"
+                    Padding="10,5"
+                    IsVisible="{Binding !!StatusMessage}"
+                    CornerRadius="4">
+                <TextBlock Text="{Binding StatusMessage}" 
+                           Foreground="White"
+                           FontWeight="SemiBold"/>
+            </Border>
+        </StackPanel>
+        
+        <!-- Main Content -->
+        <Grid Grid.Row="1" ColumnDefinitions="300,*">
+            <!-- Left Panel: Roles List -->
+            <Border Grid.Column="0" 
+                    BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="10"
+                    Margin="0,0,10,0">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <StackPanel Grid.Row="0" Spacing="10" Margin="0,0,0,10">
+                        <TextBlock Text="Roles" 
+                                   FontWeight="SemiBold"
+                                   FontSize="14"/>
+                        <Button Content="➕ Create New Role"
+                                Command="{Binding CreateNewCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                    
+                    <ListBox Grid.Row="1"
+                             ItemsSource="{Binding AllRoles}"
+                             SelectedItem="{Binding SelectedRole}"
+                             Background="Transparent">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayName}" 
+                                           TextWrapping="Wrap"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    
+                    <TextBlock Grid.Row="2"
+                               Text="{Binding AllRoles.Count, StringFormat='Total: {0} roles'}"
+                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                               Margin="0,10,0,0"
+                               FontSize="11"/>
+                </Grid>
+            </Border>
+            
+            <!-- Right Panel: Role Properties -->
+            <Border Grid.Column="1"
+                    BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="15">
+                <ScrollViewer>
+                    <StackPanel Spacing="15">
+                        <TextBlock Text="Role Properties" 
+                                   FontWeight="SemiBold"
+                                   FontSize="16"/>
+                        
+                        <!-- ID (Read-only for existing roles) -->
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="ID *" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding RoleId}" 
+                                     IsReadOnly="{Binding IsEditMode}"
+                                     Watermark="e.g., custom-designer"/>
+                        </StackPanel>
+                        
+                        <!-- Name -->
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Name *" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding RoleName}" 
+                                     Watermark="e.g., UI/UX Designer"
+                                     IsReadOnly="{Binding !IsEditMode, Converter={x:Static ObjectConverters.IsNull}}"/>
+                        </StackPanel>
+                        
+                        <!-- Icon -->
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Icon" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding RoleIcon}" 
+                                     Watermark="e.g., 🎨"
+                                     MaxLength="2"/>
+                        </StackPanel>
+                        
+                        <!-- Description -->
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Description" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding RoleDescription}"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     MinHeight="60"
+                                     Watermark="Brief description of this role's purpose"/>
+                        </StackPanel>
+                        
+                        <!-- System Prompt -->
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="System Prompt *" FontWeight="SemiBold"/>
+                            <TextBlock Text="The detailed instructions that define this AI role's behavior"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                            <TextBox Text="{Binding SystemPrompt}"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     MinHeight="150"
+                                     Watermark="You are an expert [role]. Your expertise includes..."/>
+                        </StackPanel>
+                        
+                        <!-- Tone -->
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Tone" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding Tone}"
+                                     Watermark="e.g., Professional, friendly, analytical"/>
+                        </StackPanel>
+                        
+                        <!-- Style -->
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Style" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding Style}"
+                                     Watermark="e.g., Clear and concise, detailed with examples"/>
+                        </StackPanel>
+                        
+                        <!-- Priorities -->
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Priorities" FontWeight="SemiBold"/>
+                            <TextBlock Text="Comma-separated list"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                            <TextBox Text="{Binding Priorities}"
+                                     Watermark="e.g., User Experience, Accessibility, Design Systems"/>
+                        </StackPanel>
+                        
+                        <!-- Expertise -->
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Expertise" FontWeight="SemiBold"/>
+                            <TextBlock Text="Comma-separated list"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                            <TextBox Text="{Binding Expertise}"
+                                     Watermark="e.g., UI Design, Interaction Design, Prototyping"/>
+                        </StackPanel>
+                        
+                        <!-- Action Buttons -->
+                        <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,0">
+                            <Button Content="💾 Save"
+                                    Command="{Binding SaveCommand}"
+                                    HorizontalAlignment="Left"
+                                    Padding="15,8"/>
+                            <Button Content="🗑️ Delete"
+                                    Command="{Binding DeleteCommand}"
+                                    IsVisible="{Binding IsEditMode}"
+                                    HorizontalAlignment="Left"
+                                    Padding="15,8"/>
+                            <Button Content="Cancel"
+                                    Command="{Binding CancelCommand}"
+                                    HorizontalAlignment="Left"
+                                    Padding="15,8"/>
+                        </StackPanel>
+                        
+                        <TextBlock Text="* Required fields"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                   Margin="0,10,0,0"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
+

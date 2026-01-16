@@ -1,0 +1,522 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:ShieldPrompt.App.ViewModels.V2"
+        xmlns:controls="clr-namespace:ShieldPrompt.App.Views.V2.Controls"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        x:Class="ShieldPrompt.App.Views.V2.MainWindowV2"
+        x:DataType="vm:MainWindowV2ViewModel"
+        Title="ShieldPrompt v2.0"
+        Width="1200" Height="800"
+        MinWidth="800" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource SystemChromeMediumLowColor}">
+
+    <Window.Styles>
+        <!-- Modern dark theme styling -->
+        <Style Selector="Window">
+            <Setter Property="Background" Value="#1e1e2e"/>
+        </Style>
+        
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="#cdd6f4"/>
+        </Style>
+        
+        <Style Selector="Button">
+            <Setter Property="Background" Value="#313244"/>
+            <Setter Property="Foreground" Value="#cdd6f4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+        
+        <Style Selector="Button:pointerover">
+            <Setter Property="Background" Value="#45475a"/>
+        </Style>
+        
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="#89b4fa"/>
+            <Setter Property="Foreground" Value="#1e1e2e"/>
+        </Style>
+        
+        <Style Selector="Button.primary:pointerover">
+            <Setter Property="Background" Value="#b4befe"/>
+        </Style>
+        
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#313244"/>
+            <Setter Property="Foreground" Value="#cdd6f4"/>
+            <Setter Property="BorderBrush" Value="#45475a"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="8,6"/>
+        </Style>
+        
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="#313244"/>
+            <Setter Property="Foreground" Value="#cdd6f4"/>
+            <Setter Property="BorderBrush" Value="#45475a"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="8,6"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto">
+        
+        <!-- Header Bar -->
+        <Border Grid.Row="0" 
+                Background="#181825" 
+                Padding="16,12"
+                BorderBrush="#313244"
+                BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                
+                <!-- Left: Logo & Open -->
+                <StackPanel Grid.Column="0" 
+                            Orientation="Horizontal" 
+                            Spacing="12"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="🛡️" FontSize="24"/>
+                    <TextBlock Text="ShieldPrompt" 
+                               FontSize="18" 
+                               FontWeight="Bold"
+                               Foreground="#89b4fa"
+                               VerticalAlignment="Center"/>
+                    <Button Command="{Binding OpenFolderCommand}"
+                            ToolTip.Tip="Open Folder (Ctrl+O)">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="📁"/>
+                            <TextBlock Text="Open"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding RefreshCommand}"
+                            ToolTip.Tip="Refresh (Ctrl+R)">
+                        <TextBlock Text="🔄"/>
+                    </Button>
+                </StackPanel>
+                
+                <!-- Center: Workspace & Role Selection -->
+                <StackPanel Grid.Column="1" 
+                            Orientation="Horizontal" 
+                            HorizontalAlignment="Center"
+                            Spacing="16">
+                    
+                    <!-- Workspace Dropdown -->
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="📂" VerticalAlignment="Center"/>
+                        <ComboBox ItemsSource="{Binding RecentWorkspaces}"
+                                  SelectedItem="{Binding CurrentWorkspace}"
+                                  MinWidth="200"
+                                  PlaceholderText="No workspace open">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                    
+                    <!-- Role Dropdown -->
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="🎭" VerticalAlignment="Center"/>
+                        <ComboBox ItemsSource="{Binding AvailableRoles}"
+                                  SelectedItem="{Binding SelectedRole}"
+                                  MinWidth="200">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="{Binding Icon}"/>
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                </StackPanel>
+                
+                <!-- Right: Settings & Model -->
+                <StackPanel Grid.Column="2" 
+                            Orientation="Horizontal" 
+                            Spacing="12"
+                            VerticalAlignment="Center">
+                    <ComboBox ItemsSource="{Binding AvailableModels}"
+                              SelectedItem="{Binding SelectedModel}"
+                              MinWidth="140">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayName}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button Command="{Binding OpenSettingsCommand}"
+                            ToolTip.Tip="Settings">
+                        <TextBlock Text="⚙️"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- Main Content Area: 3-Panel Layout -->
+        <Grid Grid.Row="1" ColumnDefinitions="280,Auto,*">
+
+            <!-- Left Panel: File Tree -->
+            <Border Grid.Column="0"
+                    Background="#181825"
+                    Padding="12"
+                    Width="{Binding FileTreeWidth}"
+                    MinWidth="200"
+                    IsVisible="{Binding !IsFileTreeCollapsed}">
+                <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+
+                    <!-- Panel Header with Collapse Button -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,8">
+                        <TextBlock Text="📂 WORKSPACES" FontWeight="Bold" Foreground="#89b4fa" VerticalAlignment="Center"/>
+                        <Button Grid.Column="1"
+                                Command="{Binding ClearAllWorkspacesCommand}"
+                                Content="🗑"
+                                Background="Transparent"
+                                Padding="6,2"
+                                ToolTip.Tip="Clear all workspaces"
+                                IsVisible="{Binding WorkspaceRoots.Count}"/>
+                        <Button Grid.Column="2"
+                                Command="{Binding ToggleFileTreeCommand}"
+                                Content="◀"
+                                Background="Transparent"
+                                Padding="6,2"
+                                ToolTip.Tip="Collapse file tree"/>
+                    </Grid>
+
+                    <!-- Workspace Roots List -->
+                    <ItemsControl Grid.Row="1"
+                                  ItemsSource="{Binding WorkspaceRoots}"
+                                  Margin="0,0,0,8">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:WorkspaceRootViewModel">
+                                <Border Background="{Binding BackgroundColor}"
+                                        CornerRadius="4"
+                                        Padding="8,6"
+                                        Margin="0,2">
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                        <!-- Primary indicator / Set Primary button -->
+                                        <Button Grid.Column="0"
+                                                Command="{Binding $parent[ItemsControl].((vm:MainWindowV2ViewModel)DataContext).SetPrimaryWorkspaceCommand}"
+                                                CommandParameter="{Binding}"
+                                                Background="Transparent"
+                                                Padding="4,2"
+                                                ToolTip.Tip="Set as primary workspace (where changes apply)">
+                                            <TextBlock Text="{Binding Icon}" FontSize="14"/>
+                                        </Button>
+                                        <!-- Folder name -->
+                                        <Panel Grid.Column="1" Margin="4,0">
+                                            <TextBlock Text="{Binding Name}"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="#a6e3a1"
+                                                       FontWeight="Bold"
+                                                       IsVisible="{Binding IsPrimary}"/>
+                                            <TextBlock Text="{Binding Name}"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="#cdd6f4"
+                                                       IsVisible="{Binding !IsPrimary}"/>
+                                        </Panel>
+                                        <!-- Primary badge -->
+                                        <Border Grid.Column="2"
+                                                Background="#a6e3a1"
+                                                CornerRadius="3"
+                                                Padding="4,1"
+                                                Margin="4,0"
+                                                IsVisible="{Binding IsPrimary}"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="PRIMARY"
+                                                       FontSize="9"
+                                                       FontWeight="Bold"
+                                                       Foreground="#1e1e2e"/>
+                                        </Border>
+                                        <!-- Remove button -->
+                                        <Button Grid.Column="3"
+                                                Command="{Binding $parent[ItemsControl].((vm:MainWindowV2ViewModel)DataContext).RemoveWorkspaceRootCommand}"
+                                                CommandParameter="{Binding}"
+                                                Content="✕"
+                                                Background="Transparent"
+                                                Foreground="#f38ba8"
+                                                Padding="4,2"
+                                                ToolTip.Tip="Remove this workspace"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Search -->
+                    <TextBox Grid.Row="2"
+                             Text="{Binding FileSearchQuery}"
+                             Watermark="🔍 Search files..."
+                             Margin="0,0,0,8"/>
+
+                    <!-- File Tree with Cascading Selection -->
+                    <TreeView Grid.Row="3"
+                              ItemsSource="{Binding WorkspaceRoots}"
+                              Background="Transparent">
+                        <TreeView.Styles>
+                            <Style Selector="TreeViewItem">
+                                <Setter Property="IsExpanded" Value="True"/>
+                            </Style>
+                        </TreeView.Styles>
+                        <TreeView.DataTemplates>
+                            <!-- Workspace Root Template -->
+                            <TreeDataTemplate DataType="vm:WorkspaceRootViewModel" ItemsSource="{Binding Children}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{Binding Icon}"
+                                               VerticalAlignment="Center"
+                                               FontSize="14"/>
+                                    <Panel>
+                                        <TextBlock Text="{Binding Name}"
+                                                   VerticalAlignment="Center"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#a6e3a1"
+                                                   IsVisible="{Binding IsPrimary}"/>
+                                        <TextBlock Text="{Binding Name}"
+                                                   VerticalAlignment="Center"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#89b4fa"
+                                                   IsVisible="{Binding !IsPrimary}"/>
+                                    </Panel>
+                                </StackPanel>
+                            </TreeDataTemplate>
+                            <!-- File/Folder Node Template -->
+                            <TreeDataTemplate DataType="vm:FileNodeViewModel" ItemsSource="{Binding Children}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <CheckBox IsChecked="{Binding IsChecked}"
+                                              IsThreeState="True"
+                                              VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Icon}"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Name}"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Extension}"
+                                               Foreground="#6c7086"
+                                               FontSize="11"
+                                               VerticalAlignment="Center"
+                                               IsVisible="{Binding !IsDirectory}"/>
+                                    <!-- Git Status Indicator -->
+                                    <Border Background="{Binding GitStatusColor}"
+                                            CornerRadius="2"
+                                            Padding="4,1"
+                                            IsVisible="{Binding HasGitStatus}"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding GitStatusIcon}"
+                                                   FontSize="9"
+                                                   FontWeight="Bold"
+                                                   Foreground="#1e1e2e"/>
+                                    </Border>
+                                    <TextBlock Text="{Binding TokenCountDisplay}"
+                                               Foreground="#89b4fa"
+                                               FontSize="10"
+                                               VerticalAlignment="Center"
+                                               IsVisible="{Binding !IsDirectory}"/>
+                                </StackPanel>
+                            </TreeDataTemplate>
+                        </TreeView.DataTemplates>
+                    </TreeView>
+
+                    <!-- File Stats -->
+                    <Border Grid.Row="4"
+                            Background="#313244"
+                            CornerRadius="4"
+                            Padding="12,8"
+                            Margin="0,8,0,0">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{Binding SelectedFilesText}"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding TotalTokensText}"
+                                       Foreground="#6c7086"
+                                       FontSize="12"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Collapsed File Tree Indicator -->
+            <Border Grid.Column="0"
+                    Background="#181825"
+                    Width="32"
+                    IsVisible="{Binding IsFileTreeCollapsed}">
+                <Button Command="{Binding ToggleFileTreeCommand}"
+                        Content="▶"
+                        Background="Transparent"
+                        VerticalAlignment="Top"
+                        Padding="8"
+                        Margin="0,12,0,0"
+                        ToolTip.Tip="Expand file tree"/>
+            </Border>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1"
+                          Width="4"
+                          Background="#313244"
+                          ResizeDirection="Columns"
+                          IsVisible="{Binding !IsFileTreeCollapsed}"/>
+
+            <!-- Right Panel: Preview/ApplyDashboard & Instructions -->
+            <Grid Grid.Column="2" RowDefinitions="*,Auto,Auto">
+
+                <!-- Live Preview (when not showing ApplyDashboard) -->
+                <Border Grid.Row="0"
+                        Background="#181825"
+                        Margin="0"
+                        Padding="16"
+                        IsVisible="{Binding !ResponseDashboardVisible}">
+                    <Grid RowDefinitions="Auto,*">
+
+                        <!-- Preview Header -->
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
+                                <TextBlock Text="📄 LIVE PREVIEW"
+                                           FontWeight="Bold"
+                                           Foreground="#89b4fa"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding PreviewTokenCount}"
+                                           Foreground="#6c7086"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                <Button Content="📋 Copy"
+                                        Command="{Binding CopyPreviewCommand}"
+                                        Classes="primary"/>
+                                <Button Content="⟲"
+                                        Command="{Binding ResetLayoutCommand}"
+                                        Background="Transparent"
+                                        Padding="6,2"
+                                        ToolTip.Tip="Reset layout to default"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Preview Content (Click to Copy) -->
+                        <Border Grid.Row="1"
+                                Background="#11111b"
+                                CornerRadius="8"
+                                Padding="16"
+                                Cursor="Hand"
+                                PointerPressed="OnPreviewClick">
+                            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                          VerticalScrollBarVisibility="Auto">
+                                <TextBlock Text="{Binding LivePreviewContent}"
+                                           FontFamily="Cascadia Code, JetBrains Mono, Consolas, monospace"
+                                           FontSize="13"
+                                           TextWrapping="Wrap"
+                                           Foreground="#cdd6f4"/>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Apply Dashboard (when visible) -->
+                <controls:ApplyDashboard Grid.Row="0"
+                                          DataContext="{Binding ApplyDashboard}"
+                                          IsVisible="{Binding $parent[Window].((vm:MainWindowV2ViewModel)DataContext).ResponseDashboardVisible}"/>
+
+                <!-- Splitter -->
+                <GridSplitter Grid.Row="1"
+                              Height="4"
+                              Background="#313244"
+                              ResizeDirection="Rows"/>
+
+                <!-- Custom Instructions -->
+                <Border Grid.Row="2"
+                        Background="#181825"
+                        Padding="16"
+                        MinHeight="120">
+                    <Grid RowDefinitions="Auto,*">
+                        <TextBlock Grid.Row="0"
+                                   Text="📝 Custom Instructions (optional)"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,8"
+                                   Foreground="#a6adc8"/>
+                        <TextBox Grid.Row="1"
+                                 Text="{Binding CustomInstructions}"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 Watermark="Add specific instructions for the AI..."
+                                 MinHeight="60"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+        
+        <!-- Action Bar -->
+        <Border Grid.Row="2" 
+                Background="#181825" 
+                Padding="16,12"
+                BorderBrush="#313244"
+                BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="*,Auto,*">
+                
+                <!-- Left: Sanitization Info -->
+                <StackPanel Grid.Column="0" 
+                            Orientation="Horizontal" 
+                            Spacing="12"
+                            VerticalAlignment="Center">
+                    <CheckBox Content="🔐 Sanitize"
+                              IsChecked="{Binding SanitizationEnabled}"
+                              Foreground="#cdd6f4"/>
+                    <TextBlock Text="{Binding SanitizedCountText}"
+                               Foreground="#f38ba8"
+                               IsVisible="{Binding HasSanitizedValues}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- Center: Main Actions -->
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            Spacing="12">
+                    <Button Content="📋 Copy to Clipboard"
+                            Command="{Binding CopyToClipboardCommand}"
+                            Classes="primary"
+                            FontWeight="SemiBold"
+                            Padding="20,10"
+                            IsVisible="{Binding !ResponseDashboardVisible}"/>
+                    <Button Content="📥 Paste Response"
+                            Command="{Binding PasteResponseCommand}"
+                            Padding="20,10"
+                            IsVisible="{Binding !ResponseDashboardVisible}"/>
+                    <!-- Close Dashboard Button (when dashboard is visible) -->
+                    <Button Content="← Back to Preview"
+                            Command="{Binding CloseApplyDashboardCommand}"
+                            Padding="20,10"
+                            IsVisible="{Binding ResponseDashboardVisible}"/>
+                </StackPanel>
+                
+                <!-- Right: Context Usage -->
+                <StackPanel Grid.Column="2" 
+                            Orientation="Horizontal" 
+                            HorizontalAlignment="Right"
+                            Spacing="8"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="{Binding ContextUsageText}"
+                               Foreground="#6c7086"/>
+                    <ProgressBar Value="{Binding ContextUsagePercent}"
+                                 Maximum="100"
+                                 Width="100"
+                                 Height="6"
+                                 CornerRadius="3"
+                                 Background="#313244"
+                                 Foreground="{Binding ContextUsageColor}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- Status Bar (using StatusBarViewModel) -->
+        <controls:StatusBar Grid.Row="3" DataContext="{Binding StatusBar}"/>
+    </Grid>
+    
+    <!-- Keyboard Shortcuts -->
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding OpenFolderCommand}"/>
+        <KeyBinding Gesture="Ctrl+R" Command="{Binding RefreshCommand}"/>
+        <KeyBinding Gesture="Ctrl+C" Command="{Binding CopyToClipboardCommand}"/>
+        <KeyBinding Gesture="Ctrl+V" Command="{Binding PasteResponseCommand}"/>
+        <KeyBinding Gesture="Ctrl+Shift+C" Command="{Binding CopyPreviewCommand}"/>
+    </Window.KeyBindings>
+</Window>
+

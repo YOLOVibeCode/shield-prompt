@@ -125,7 +125,8 @@ public class PromptComposerTests
         _tokenCountingService = Substitute.For<ITokenCountingService>();
         _tokenCountingService.CountTokens(Arg.Any<string>()).Returns(1000);
         
-        _sut = new PromptComposer(_tokenCountingService);
+        var xmlBuilder = new XmlPromptBuilder();
+        _sut = new PromptComposer(_tokenCountingService, xmlBuilder);
     }
 
     [Fact]

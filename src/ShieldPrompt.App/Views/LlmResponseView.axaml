@@ -1,0 +1,254 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ShieldPrompt.App.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="ShieldPrompt.App.Views.LlmResponseView"
+             x:DataType="vm:LlmResponseViewModel">
+    
+    <Design.DataContext>
+        <!-- Design-time ViewModel for preview -->
+        <vm:LlmResponseViewModel />
+    </Design.DataContext>
+    
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Header Section -->
+        <Border Grid.Row="0" 
+                Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                Padding="20,15">
+            <StackPanel Spacing="10">
+                <TextBlock Text="📋 LLM Response Dashboard"
+                          FontSize="20"
+                          FontWeight="SemiBold"/>
+                <TextBlock Text="Paste LLM responses here to parse and apply file operations"
+                          FontSize="12"
+                          Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- Main Content Area -->
+        <ScrollViewer Grid.Row="1" Padding="20">
+            <StackPanel Spacing="20">
+                
+                <!-- Paste Area Section -->
+                <Border BorderBrush="{DynamicResource SystemControlHighlightBaseMediumBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="15">
+                    <StackPanel Spacing="10">
+                        <DockPanel>
+                            <TextBlock Text="📥 LLM Response"
+                                      FontSize="16"
+                                      FontWeight="SemiBold"
+                                      DockPanel.Dock="Left"/>
+                            <Button Content="📋 Paste from Clipboard"
+                                   Command="{Binding PasteFromClipboardCommand}"
+                                   HorizontalAlignment="Right"
+                                   DockPanel.Dock="Right"/>
+                        </DockPanel>
+                        
+                        <TextBox Text="{Binding ResponseText}"
+                                AcceptsReturn="True"
+                                TextWrapping="Wrap"
+                                MinHeight="150"
+                                MaxHeight="300"
+                                Watermark="Paste your LLM response here (Ctrl+V)..."
+                                FontFamily="Consolas,Menlo,monospace"
+                                FontSize="11"/>
+                        
+                        <Button Content="🔍 Parse Response"
+                               Command="{Binding ParseResponseCommand}"
+                               HorizontalAlignment="Center"
+                               Padding="20,8"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Statistics Panel -->
+                <Border BorderBrush="{DynamicResource SystemControlHighlightBaseMediumBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="15"
+                        IsVisible="{Binding HasOperations}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="📊 Statistics"
+                                  FontSize="16"
+                                  FontWeight="SemiBold"/>
+                        
+                        <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto">
+                            <!-- Total Operations -->
+                            <StackPanel Grid.Column="0" Spacing="5">
+                                <TextBlock Text="{Binding Statistics.TotalOperations}"
+                                          FontSize="24"
+                                          FontWeight="Bold"
+                                          HorizontalAlignment="Center"/>
+                                <TextBlock Text="Total Operations"
+                                          FontSize="11"
+                                          HorizontalAlignment="Center"
+                                          Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                            </StackPanel>
+                            
+                            <!-- Updates -->
+                            <StackPanel Grid.Column="1" Spacing="5">
+                                <TextBlock Text="{Binding Statistics.UpdateCount}"
+                                          FontSize="24"
+                                          FontWeight="Bold"
+                                          HorizontalAlignment="Center"
+                                          Foreground="Orange"/>
+                                <TextBlock Text="✏️ Updates"
+                                          FontSize="11"
+                                          HorizontalAlignment="Center"
+                                          Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                            </StackPanel>
+                            
+                            <!-- Creates -->
+                            <StackPanel Grid.Column="2" Spacing="5">
+                                <TextBlock Text="{Binding Statistics.CreateCount}"
+                                          FontSize="24"
+                                          FontWeight="Bold"
+                                          HorizontalAlignment="Center"
+                                          Foreground="Green"/>
+                                <TextBlock Text="➕ Creates"
+                                          FontSize="11"
+                                          HorizontalAlignment="Center"
+                                          Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                            </StackPanel>
+                            
+                            <!-- Deletes -->
+                            <StackPanel Grid.Column="3" Spacing="5">
+                                <TextBlock Text="{Binding Statistics.DeleteCount}"
+                                          FontSize="24"
+                                          FontWeight="Bold"
+                                          HorizontalAlignment="Center"
+                                          Foreground="Red"/>
+                                <TextBlock Text="🗑️ Deletes"
+                                          FontSize="11"
+                                          HorizontalAlignment="Center"
+                                          Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                            </StackPanel>
+                        </Grid>
+                        
+                        <TextBlock Text="{Binding Statistics.SummaryText}"
+                                  FontSize="12"
+                                  HorizontalAlignment="Center"
+                                  Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Analysis Section -->
+                <Border BorderBrush="{DynamicResource SystemControlHighlightBaseMediumBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="15"
+                        IsVisible="{Binding ParseResult.Analysis, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="🔍 Analysis"
+                                  FontSize="16"
+                                  FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding ParseResult.Analysis}"
+                                  TextWrapping="Wrap"
+                                  FontSize="12"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- File Operations List -->
+                <Border BorderBrush="{DynamicResource SystemControlHighlightBaseMediumBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="15"
+                        IsVisible="{Binding HasOperations}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="📁 File Operations"
+                                  FontSize="16"
+                                  FontWeight="SemiBold"/>
+                        
+                        <ItemsControl ItemsSource="{Binding Operations}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                                           BorderThickness="1"
+                                           CornerRadius="4"
+                                           Padding="10"
+                                           Margin="0,5">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <!-- Checkbox & Icon -->
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
+                                                <CheckBox IsChecked="{Binding IsSelected}"
+                                                         VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding OperationIcon}"
+                                                          FontSize="20"
+                                                          VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding StatusIcon}"
+                                                          FontSize="16"
+                                                          VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            
+                                            <!-- File Details -->
+                                            <StackPanel Grid.Column="1" Spacing="5" Margin="10,0">
+                                                <TextBlock Text="{Binding FilePath}"
+                                                          FontWeight="SemiBold"
+                                                          FontSize="13"/>
+                                                <TextBlock Text="{Binding Reason}"
+                                                          FontSize="11"
+                                                          Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                                <TextBlock Text="{Binding ImpactText}"
+                                                          FontSize="10"
+                                                          Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                                <TextBlock Text="{Binding WarningMessage}"
+                                                          FontSize="11"
+                                                          Foreground="OrangeRed"
+                                                          IsVisible="{Binding HasWarning}"/>
+                                            </StackPanel>
+                                            
+                                            <!-- Action Buttons -->
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="5">
+                                                <Button Content="👁️ View"
+                                                       Padding="8,4"
+                                                       FontSize="11"
+                                                       ToolTip.Tip="View details"/>
+                                                <Button Content="⏭️ Skip"
+                                                       Padding="8,4"
+                                                       FontSize="11"
+                                                       Command="{Binding $parent[ItemsControl].((vm:LlmResponseViewModel)DataContext).Operations[0].ToggleSelection}"
+                                                       ToolTip.Tip="Toggle skip"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- Footer with Action Buttons & Status -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="20,15">
+            <Grid ColumnDefinitions="*,Auto">
+                <!-- Status Message -->
+                <TextBlock Grid.Column="0"
+                          Text="{Binding StatusMessage}"
+                          VerticalAlignment="Center"
+                          FontSize="12"/>
+                
+                <!-- Action Buttons -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <Button Content="❌ Clear"
+                           Command="{Binding ClearDashboardCommand}"
+                           Padding="15,8"/>
+                    <Button Content="⚡ Apply All Changes"
+                           Command="{Binding ApplyAllChangesCommand}"
+                           IsEnabled="{Binding HasOperations}"
+                           Padding="20,8"
+                           Classes="accent"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
+

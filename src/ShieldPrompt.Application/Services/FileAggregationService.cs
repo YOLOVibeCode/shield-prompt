@@ -32,6 +32,12 @@ public class FileAggregationService : IFileAggregationService
         "package-lock.json", "yarn.lock", "pnpm-lock.yaml", "Cargo.lock"
     ];
 
+    private bool IsHiddenFile(string path)
+    {
+        var fileName = Path.GetFileName(path);
+        return !string.IsNullOrEmpty(fileName) && fileName.StartsWith('.');
+    }
+
     public async Task<FileNode> LoadDirectoryAsync(string path, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(path);
@@ -95,6 +101,11 @@ public class FileAggregationService : IFileAggregationService
         ArgumentNullException.ThrowIfNull(path);
 
         var fileName = Path.GetFileName(path);
+        
+        // Exclude hidden files/directories (starting with .)
+        if (IsHiddenFile(path))
+            return true;
+        
         if (ExcludedFiles.Contains(fileName))
             return true;
 

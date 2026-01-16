@@ -19,6 +19,7 @@ public record PromptTemplate(
 public record PromptOptions(
     string? CustomInstructions = null,
     IReadOnlyList<string>? SelectedFocusAreas = null,
+    Role? SelectedRole = null,
     bool IncludeFilePaths = true,
     bool IncludeLineNumbers = false);
 

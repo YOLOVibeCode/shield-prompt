@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:ShieldPrompt.App.ViewModels"
+        xmlns:views="using:ShieldPrompt.App.Views"
         xmlns:presentation="using:ShieldPrompt.Presentation.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -115,32 +116,34 @@
         <!-- Toolbar -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="10"
                     IsVisible="{Binding ShowToolbar}">
-            <Button Content="📁 Open Folder" 
+            <!-- Icon-only action buttons with tooltips -->
+            <Button Content="📁" 
                     Command="{Binding OpenFolderCommand}"
-                    ToolTip.Tip="Open a folder to analyze (Ctrl+O)"
+                    ToolTip.Tip="Open Folder (Ctrl+O)"
+                    FontSize="18"
+                    Width="40"
+                    Height="40"
                     HorizontalContentAlignment="Center"
-                    Padding="15,8"/>
-            <Button Content="🔄 Refresh" 
+                    VerticalContentAlignment="Center"
+                    Padding="0"/>
+            <Button Content="🔄" 
                     Command="{Binding OpenFolderCommand}"
-                    ToolTip.Tip="Reload current folder (F5 or Ctrl+R)"
+                    ToolTip.Tip="Refresh (F5)"
+                    FontSize="18"
+                    Width="40"
+                    Height="40"
                     HorizontalContentAlignment="Center"
-                    Padding="15,8"/>
-            <Button Content="📥 Paste &amp; Restore"
+                    VerticalContentAlignment="Center"
+                    Padding="0"/>
+            <Button Content="📥"
                     Command="{Binding OpenPasteRestoreDialogCommand}"
-                    ToolTip.Tip="Paste AI response and restore original values (Ctrl+V)"
+                    ToolTip.Tip="Paste &amp; Restore (Ctrl+V)"
+                    FontSize="18"
+                    Width="40"
+                    Height="40"
                     HorizontalContentAlignment="Center"
-                    Padding="15,8"/>
-            <Separator Width="1" Height="30"/>
-            <Button Content="↶ Undo"
-                    Command="{Binding UndoCommand}"
-                    ToolTip.Tip="{Binding UndoDescription, StringFormat='Undo: {0} (Ctrl+Z)'}"
-                    HorizontalContentAlignment="Center"
-                    Padding="12,8"/>
-            <Button Content="↷ Redo"
-                    Command="{Binding RedoCommand}"
-                    ToolTip.Tip="{Binding RedoDescription, StringFormat='Redo: {0} (Ctrl+Y)'}"
-                    HorizontalContentAlignment="Center"
-                    Padding="12,8"/>
+                    VerticalContentAlignment="Center"
+                    Padding="0"/>
             <Separator Width="1" Height="30"/>
             <TextBlock Text="Format:" VerticalAlignment="Center" Margin="10,0,5,0"/>
             <ComboBox ItemsSource="{Binding AvailableFormatters}"
@@ -153,11 +156,77 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
+            
+            <!-- Format Info Button with Popup -->
+            <Button Width="24" Height="24" 
+                    Margin="4,0,0,0"
+                    Padding="0"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    IsVisible="{Binding !!SelectedFormatMetadata}"
+                    ToolTip.Tip="Click for format pros and cons">
+                <Button.Flyout>
+                    <Flyout>
+                        <StackPanel Width="350" Spacing="10">
+                            <TextBlock Text="{Binding SelectedFormatMetadata.Name, StringFormat='{}{0} Format'}"
+                                       FontWeight="Bold"
+                                       FontSize="14"/>
+                            <TextBlock Text="{Binding SelectedFormatMetadata.Description}"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                            
+                            <!-- Pros Section -->
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="✅ PROS:" 
+                                           FontWeight="SemiBold"
+                                           Foreground="Green"/>
+                                <ItemsControl ItemsSource="{Binding SelectedFormatMetadata.Pros}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding StringFormat='• {0}'}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="10,0,0,2"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                            
+                            <!-- Cons Section -->
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="⚠️ CONS:" 
+                                           FontWeight="SemiBold"
+                                           Foreground="Orange"/>
+                                <ItemsControl ItemsSource="{Binding SelectedFormatMetadata.Cons}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding StringFormat='• {0}'}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="10,0,0,2"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                            
+                            <!-- Recommended For Section -->
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="💡 RECOMMENDED FOR:" 
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                <TextBlock Text="{Binding SelectedFormatMetadata.RecommendedFor}"
+                                           TextWrapping="Wrap"
+                                           Margin="10,0,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Flyout>
+                </Button.Flyout>
+                <TextBlock Text="ℹ️" FontSize="16" VerticalAlignment="Center"/>
+            </Button>
+            
             <TextBlock Text="Model:" VerticalAlignment="Center" Margin="10,0,5,0"/>
             <ComboBox ItemsSource="{Binding AvailableModels}"
                       SelectedItem="{Binding SelectedModel}"
                       ToolTip.Tip="Select AI model for token limit calculation"
-                      Width="180">
+                      Width="150">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding DisplayName}"/>
@@ -165,14 +234,14 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
             <Separator Width="1" Height="30"/>
-            <TextBlock Text="Task:" VerticalAlignment="Center" Margin="10,0,5,0"/>
-            <ComboBox ItemsSource="{Binding AvailableTemplates}"
-                      SelectedItem="{Binding SelectedTemplate}"
-                      ToolTip.Tip="Choose AI task type (code review, debug, explain, etc.)"
-                      Width="200">
+            <TextBlock Text="Analysis Mode:" VerticalAlignment="Center" Margin="10,0,5,0"/>
+            <ComboBox ItemsSource="{Binding AvailableRoles}"
+                      SelectedItem="{Binding SelectedRole}"
+                      ToolTip.Tip="Choose what type of analysis to perform on the code"
+                      Width="220">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Spacing="5">
+                        <StackPanel Orientation="Horizontal" Spacing="5" ToolTip.Tip="{Binding Description}">
                             <TextBlock Text="{Binding Icon}" FontSize="14"/>
                             <TextBlock Text="{Binding Name}"/>
                         </StackPanel>
@@ -181,8 +250,11 @@
             </ComboBox>
         </StackPanel>
 
-        <!-- Main Content Area -->
-        <Grid Grid.Row="2" ColumnDefinitions="300,Auto,*" Margin="10,0">
+        <!-- Main Content Area with Tabs -->
+        <TabControl Grid.Row="2" Margin="10,0">
+            <!-- Tab 1: Prompt Builder -->
+            <TabItem Header="📝 Prompt Builder">
+                <Grid ColumnDefinitions="300,Auto,*" Margin="0">
             <!-- File Tree (Left Panel) -->
             <Border Grid.Column="0"
                     MinWidth="200" 
@@ -219,15 +291,14 @@
 
             <!-- Horizontal GridSplitter (Draggable) -->
             <GridSplitter Grid.Column="1"
+                          x:Name="HorizontalSplitter"
                           Width="6"
-                          Background="Transparent"
+                          Background="{DynamicResource SystemControlHighlightBaseLowBrush}"
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Stretch"
-                          ToolTip.Tip="Drag to resize panels (double-click to reset)">
+                          ToolTip.Tip="Drag to resize panels (double-click to reset)"
+                          DoubleTapped="HorizontalSplitter_DoubleTapped">
                 <GridSplitter.Styles>
-                    <Style Selector="GridSplitter">
-                        <Setter Property="Background" Value="Transparent"/>
-                    </Style>
                     <Style Selector="GridSplitter:pointerover">
                         <Setter Property="Background" Value="{DynamicResource SystemControlHighlightBaseMediumBrush}"/>
                         <Setter Property="Cursor" Value="SizeWestEast"/>
@@ -267,6 +338,28 @@
                                        TextWrapping="Wrap"
                                        FontSize="12"
                                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                            
+                            <!-- Focus Areas (if available) -->
+                            <StackPanel Spacing="5" Margin="0,5,0,0" IsVisible="{Binding HasFocusAreas}">
+                                <TextBlock Text="Focus on:"
+                                           FontWeight="SemiBold"
+                                           FontSize="11"/>
+                                <ItemsControl ItemsSource="{Binding AvailableFocusAreas}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <CheckBox Content="{Binding Name}"
+                                                      IsChecked="{Binding IsSelected}"
+                                                      Margin="0,0,10,5"
+                                                      FontSize="11"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
@@ -317,15 +410,14 @@
 
                 <!-- Vertical GridSplitter -->
                 <GridSplitter Grid.Row="1"
+                              x:Name="VerticalSplitter"
                               Height="6"
-                              Background="Transparent"
+                              Background="{DynamicResource SystemControlHighlightBaseLowBrush}"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch"
-                              ToolTip.Tip="Drag to resize (double-click to reset)">
+                              ToolTip.Tip="Drag to resize (double-click to reset)"
+                              DoubleTapped="VerticalSplitter_DoubleTapped">
                     <GridSplitter.Styles>
-                        <Style Selector="GridSplitter">
-                            <Setter Property="Background" Value="Transparent"/>
-                        </Style>
                         <Style Selector="GridSplitter:pointerover">
                             <Setter Property="Background" Value="{DynamicResource SystemControlHighlightBaseMediumBrush}"/>
                             <Setter Property="Cursor" Value="SizeNorthSouth"/>
@@ -335,17 +427,39 @@
 
                 <!-- Bottom: Live Preview -->
                 <Grid Grid.Row="2" RowDefinitions="Auto,*,Auto">
-                    <TextBlock Grid.Row="0"
-                               Text="Live Preview"
-                               FontWeight="Bold"
-                               Margin="0,10,0,10"/>
+                    <StackPanel Grid.Row="0" 
+                                Orientation="Horizontal" 
+                                Spacing="10"
+                                Margin="0,10,0,10">
+                        <TextBlock Text="Live Preview"
+                                   FontWeight="Bold"/>
+                        <TextBlock Text="(click to copy)"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
                     
                     <Border Grid.Row="1"
+                            x:Name="LivePreviewBorder"
                             BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
-                            BorderThickness="1"
+                            BorderThickness="2"
                             CornerRadius="4"
                             Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
-                            Padding="5">
+                            Padding="10"
+                            Cursor="Hand"
+                            ToolTip.Tip="Click to copy entire preview to clipboard"
+                            PointerPressed="LivePreviewBorder_PointerPressed">
+                        <Border.Styles>
+                            <!-- Hover effect -->
+                            <Style Selector="Border:pointerover">
+                                <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}"/>
+                            </Style>
+                            <!-- Copy flash animation -->
+                            <Style Selector="Border.copyFlash">
+                                <Setter Property="BorderBrush" Value="Green"/>
+                                <Setter Property="BorderThickness" Value="3"/>
+                            </Style>
+                        </Border.Styles>
                         <ScrollViewer>
                             <TextBlock Text="{Binding LivePreview}"
                                        TextWrapping="Wrap"
@@ -373,6 +487,23 @@
             </Grid>
             </Border>
         </Grid>
+            </TabItem>
+            
+            <!-- Tab 2: LLM Response -->
+            <TabItem Header="📋 LLM Response">
+                <views:LlmResponseView DataContext="{Binding $parent[Window].DataContext.LlmResponseViewModel}"/>
+            </TabItem>
+            
+            <!-- Tab 3: Role Editor -->
+            <TabItem Header="🎭 Role Editor">
+                <views:RoleEditorView DataContext="{Binding $parent[Window].DataContext.RoleEditorViewModel}"/>
+            </TabItem>
+            
+            <!-- Tab 4: Output Format Settings -->
+            <TabItem Header="⚙️ Settings">
+                <views:OutputFormatSettingsView DataContext="{Binding $parent[Window].DataContext.OutputFormatSettingsViewModel}"/>
+            </TabItem>
+        </TabControl>
 
         <!-- Status Bar -->
         <Border Grid.Row="3" 

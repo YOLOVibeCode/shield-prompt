@@ -15,10 +15,14 @@ namespace ShieldPrompt.Application.Services;
 public class PromptComposer : IPromptComposer
 {
     private readonly ITokenCountingService _tokenCountingService;
+    private readonly IXmlPromptBuilder _xmlPromptBuilder;
 
-    public PromptComposer(ITokenCountingService tokenCountingService)
+    public PromptComposer(
+        ITokenCountingService tokenCountingService,
+        IXmlPromptBuilder xmlPromptBuilder)
     {
         _tokenCountingService = tokenCountingService;
+        _xmlPromptBuilder = xmlPromptBuilder;
     }
 
     public ComposedPrompt Compose(
@@ -135,47 +139,14 @@ public class PromptComposer : IPromptComposer
         return sb.ToString();
     }
 
-    private static string BuildFullPrompt(
+    private string BuildFullPrompt(
         string systemPrompt, 
         string userContent, 
         PromptTemplate template,
         PromptOptions options)
     {
-        var sb = new StringBuilder();
-
-        // System prompt (if present)
-        if (!string.IsNullOrWhiteSpace(systemPrompt))
-        {
-            sb.AppendLine(systemPrompt);
-            sb.AppendLine();
-            sb.AppendLine("---");
-            sb.AppendLine();
-        }
-
-        // Focus areas (if selected)
-        if (options.SelectedFocusAreas?.Count > 0)
-        {
-            sb.AppendLine("**Focus Areas:**");
-            foreach (var area in options.SelectedFocusAreas)
-            {
-                sb.AppendLine($"- {area}");
-            }
-            sb.AppendLine();
-        }
-
-        // Custom instructions (if provided and not already in system prompt)
-        if (!string.IsNullOrWhiteSpace(options.CustomInstructions) 
-            && !systemPrompt.Contains("{custom_instructions}"))
-        {
-            sb.AppendLine("**Additional Context:**");
-            sb.AppendLine(options.CustomInstructions);
-            sb.AppendLine();
-        }
-
-        // User content (files)
-        sb.Append(userContent);
-
-        return sb.ToString();
+        // NEW: Use BuildFullPromptWithXml for type-safe XML generation
+        return BuildFullPromptWithXml(systemPrompt, userContent, template, options);
     }
 
     private static string DetectPrimaryLanguage(List<FileNode> files)
@@ -229,6 +200,100 @@ public class PromptComposer : IPromptComposer
             "md" => "markdown",
             _ => extension
         };
+    }
+
+    private static void AppendResponseFormatContract(StringBuilder sb)
+    {
+        // NOTE: This method is now deprecated in favor of XmlPromptBuilder.AppendResponseInstructions()
+        // Keeping minimal implementation for backward compatibility during migration.
+        sb.AppendLine();
+        sb.AppendLine("---");
+        sb.AppendLine();
+        sb.AppendLine("## Response Format (Action-Only XML)");
+        sb.AppendLine();
+        sb.AppendLine("Respond ONLY with valid XML and nothing else.");
+        sb.AppendLine();
+        sb.AppendLine("<code_changes>");
+        sb.AppendLine("  <changed_file>");
+        sb.AppendLine("    <file_path>{relative/path}</file_path>");
+        sb.AppendLine("    <file_summary>{short summary}</file_summary>");
+        sb.AppendLine("    <file_operation>CREATE|UPDATE|DELETE</file_operation>");
+        sb.AppendLine("    <file_code><![CDATA[{full file contents}]]></file_code>");
+        sb.AppendLine("  </changed_file>");
+        sb.AppendLine("</code_changes>");
+        sb.AppendLine();
+        sb.AppendLine("Rules:");
+        sb.AppendLine("1) No markdown, no explanations, no extra text.");
+        sb.AppendLine("2) One <changed_file> per file.");
+        sb.AppendLine("3) For DELETE: omit <file_code>.");
+        sb.AppendLine("4) Use relative paths from repo root.");
+        sb.AppendLine("5) If unsure, return empty <code_changes/>.");
+        sb.AppendLine();
+        sb.AppendLine("START YOUR RESPONSE WITH: <code_changes");
+    }
+    
+    /// <summary>
+    /// Builds the full prompt with XML response instructions using XmlPromptBuilder.
+    /// This is the NEW, type-safe implementation that replaces string concatenation.
+    /// </summary>
+    private string BuildFullPromptWithXml(
+        string systemPrompt, 
+        string userContent, 
+        PromptTemplate template,
+        PromptOptions options)
+    {
+        var sb = new StringBuilder();
+
+        // Role system prompt (if selected)
+        if (options.SelectedRole != null)
+        {
+            sb.AppendLine("# AI Role");
+            sb.AppendLine();
+            sb.AppendLine($"**You are acting as: {options.SelectedRole.Name} {options.SelectedRole.Icon}**");
+            sb.AppendLine();
+            sb.AppendLine(options.SelectedRole.SystemPrompt);
+            sb.AppendLine();
+            sb.AppendLine("---");
+            sb.AppendLine();
+        }
+
+        // Template system prompt (if present)
+        if (!string.IsNullOrWhiteSpace(systemPrompt))
+        {
+            sb.AppendLine("# Task");
+            sb.AppendLine();
+            sb.AppendLine(systemPrompt);
+            sb.AppendLine();
+            sb.AppendLine("---");
+            sb.AppendLine();
+        }
+
+        // Focus areas (if selected)
+        if (options.SelectedFocusAreas?.Count > 0)
+        {
+            sb.AppendLine("**Focus Areas:**");
+            foreach (var area in options.SelectedFocusAreas)
+            {
+                sb.AppendLine($"- {area}");
+            }
+            sb.AppendLine();
+        }
+
+        // Custom instructions (if provided and not already in system prompt)
+        if (!string.IsNullOrWhiteSpace(options.CustomInstructions) 
+            && !systemPrompt.Contains("{custom_instructions}"))
+        {
+            sb.AppendLine("**Additional Context:**");
+            sb.AppendLine(options.CustomInstructions);
+            sb.AppendLine();
+        }
+
+        // User content (files)
+        sb.Append(userContent);
+
+        // NEW: Use XmlPromptBuilder for type-safe XML response format
+        var promptWithoutResponseInstructions = sb.ToString();
+        return _xmlPromptBuilder.AppendResponseInstructions(promptWithoutResponseInstructions);
     }
 }
 

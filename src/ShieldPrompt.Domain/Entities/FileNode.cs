@@ -1,3 +1,5 @@
+using ShieldPrompt.Domain.Enums;
+
 namespace ShieldPrompt.Domain.Entities;
 
 /// <summary>
@@ -59,6 +61,16 @@ public class FileNode
             return dotIndex >= 0 ? Name[dotIndex..] : string.Empty;
         }
     }
+
+    /// <summary>
+    /// Git status of this file. None if not in a git repository.
+    /// </summary>
+    public GitFileStatus GitStatus { get; set; } = GitFileStatus.None;
+
+    /// <summary>
+    /// Whether this file is ignored by .gitignore.
+    /// </summary>
+    public bool IsGitIgnored => GitStatus.HasFlag(GitFileStatus.Ignored);
 
     /// <summary>
     /// Adds a child node to this directory.
